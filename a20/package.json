@@ -1,0 +1,12 @@
+{
+  "name": "dino-tetris-arena",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Modern Tetris with dinosaur bonus event, audio, multiplayer, and leaderboard.",
+  "scripts": {
+    "start-server": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
+  }
+}

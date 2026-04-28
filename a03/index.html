@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dino Tetris Deluxe — A Level Edition</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <section class="panel side">
+      <h1>🦖 Dino Tetris Deluxe</h1>
+      <div class="subtitle">
+        A polished arcade version for class submission with colorful visuals, better gameplay,
+        a dinosaur bonus event, score tracking, and a saved leaderboard.
+      </div>
+
+      <div class="stats">
+        <div class="card"><div class="label">Score</div><div class="value" id="score">0</div></div>
+        <div class="card"><div class="label">Level</div><div class="value" id="level">1</div></div>
+        <div class="card"><div class="label">Lines</div><div class="value" id="lines">0</div></div>
+        <div class="card"><div class="label">Status</div><div class="value" id="status" style="font-size:1rem;">Ready</div></div>
+      </div>
+
+      <div class="controls">
+        <button onclick="startGame()">Start</button>
+        <button class="alt" onclick="togglePause()">Pause</button>
+        <button class="ghost" onclick="restartGame()">Restart</button>
+        <button class="ghost" id="soundButton" onclick="toggleSound()">Sound: On</button>
+      </div>
+
+      <div class="footer-note">
+        <strong>Goal:</strong> clear lines, level up, and survive. Every few points, a surprise
+        dinosaur event can eat part of the stack and help you recover.
+      </div>
+    </section>
+
+    <main class="panel center">
+      <div class="game-wrap">
+        <canvas id="game" width="300" height="600"></canvas>
+        <div class="overlay" id="startOverlay">
+          <div class="overlay-box">
+            <h2>Ready to Play?</h2>
+            <p><strong>Move:</strong> ← →</p>
+            <p><strong>Rotate:</strong> ↑ or Space</p>
+            <p><strong>Drop faster:</strong> ↓</p>
+            <p><strong>Pause:</strong> P</p>
+            <p>Press <strong>Start</strong> to begin your A-level submission version.</p>
+          </div>
+        </div>
+      </div>
+      <div class="dinoFlash" id="dinoFlash">🦖 Dino Bonus! Stack reduced!</div>
+    </main>
+
+    <aside class="panel side">
+      <div class="stack">
+        <div class="card">
+          <div class="miniTitle">Next Piece</div>
+          <canvas id="next" width="120" height="120"></canvas>
+        </div>
+
+        <div class="card">
+          <div class="miniTitle">Leaderboard</div>
+          <ol id="scores"></ol>
+          <div class="badge">Top 5 saved in browser</div>
+        </div>
+
+        <div class="card">
+          <div class="miniTitle">Why this looks stronger</div>
+          <div class="legend">
+            <strong>Included:</strong><br>
+            • better colors and layout<br>
+            • rotation and level speed-up<br>
+            • next-piece preview<br>
+            • saved high scores<br>
+            • dinosaur bonus event<br>
+            • sound effects with Web Audio
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

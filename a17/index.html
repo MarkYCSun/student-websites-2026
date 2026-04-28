@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tetris</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="brand">
+      <h1>Tetris</h1>
+      <p class="tagline">Stack, clear, survive</p>
+    </header>
+
+    <main class="layout">
+      <aside class="panel panel--left">
+        <div class="stat">
+          <span class="stat__label">Score</span>
+          <span id="score" class="stat__value">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Level</span>
+          <span id="level" class="stat__value">1</span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Lines</span>
+          <span id="lines" class="stat__value">0</span>
+        </div>
+        <p id="nextLevelHint" class="stat__hint">Next level at 500 pts</p>
+        <p id="chaosBadge" class="chaos-badge" hidden>Chaos: 2× line score</p>
+        <label class="toggle">
+          <input type="checkbox" id="soundToggle" checked />
+          <span>Sound</span>
+        </label>
+      </aside>
+
+      <div class="stage-wrap">
+        <canvas id="board" width="300" height="660" aria-label="Tetris board"></canvas>
+        <p id="chaosCountdown" class="chaos-countdown chaos-countdown--corner" hidden></p>
+        <div id="dinosaurLayer" class="bonus-chaos-layer" aria-hidden="true">
+          <p class="bonus-time-label">BONUS TIME</p>
+        </div>
+
+        <div id="levelToast" class="level-toast" aria-live="polite">
+          <div class="level-toast__inner">
+            <span class="level-toast__bonus">BONUS</span>
+            <span class="level-toast__word">LEVEL</span>
+            <span id="levelToastNum" class="level-toast__num">1</span>
+          </div>
+        </div>
+
+        <div id="startScreen" class="overlay overlay--start">
+          <div class="card card--wide">
+            <h2>Ready?</h2>
+            <div class="rules">
+              <h3 class="rules__title">How to play</h3>
+              <ul class="rules__list">
+                <li><strong>← →</strong> move · <strong>↑</strong> rotate · <strong>↓</strong> soft drop · <strong>Space</strong> hard drop</li>
+                <li>Fill a whole row to clear it. Stack carefully—if new pieces cannot spawn, game over.</li>
+              </ul>
+              <h3 class="rules__title">Scoring &amp; levels</h3>
+              <ul class="rules__list">
+                <li>Line clears only: <strong>1 line = 100</strong>, <strong>2 = 300</strong>, <strong>3 = 500</strong>, <strong>4 = 800</strong> (then ×2 during Chaos).</li>
+                <li>When your total score reaches <strong>500</strong>, you go to <strong>Level 2</strong>; every next <strong>500</strong> points moves you up again (1000 → Level 3, and so on).</li>
+                <li>Each level drops blocks a bit faster.</li>
+                <li>Passing <strong>200</strong>, <strong>400</strong>, <strong>600</strong>… starts <strong>Chaos</strong>: <strong>60s</strong> of <strong>×2</strong> line score (timer top-right). Center shows <strong>BONUS TIME</strong> briefly (nothing resets your total).</li>
+              </ul>
+            </div>
+            <button type="button" id="btnPlay" class="btn btn--primary">Play</button>
+          </div>
+        </div>
+
+        <div id="gameOverScreen" class="overlay overlay--gameover" hidden>
+          <div class="card">
+            <h2>Game Over</h2>
+            <p class="final-score">Score: <strong id="finalScore">0</strong></p>
+            <label class="field">
+              <span>Your name</span>
+              <input type="text" id="nameInput" maxlength="16" placeholder="Player" autocomplete="off" />
+            </label>
+            <div class="row">
+              <button type="button" id="btnSaveScore" class="btn btn--primary">Save &amp; continue</button>
+              <button type="button" id="btnRestart" class="btn">Play again</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="panel panel--right">
+        <h3 class="panel__title">Top 5</h3>
+        <ol id="highScores" class="highscores"></ol>
+      </aside>
+    </main>
+
+    <footer class="controls-hint">
+      <span>← → move</span>
+      <span>↑ rotate</span>
+      <span>↓ soft drop</span>
+      <span>Space hard drop</span>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GB Tetris</title>
+    <meta name="description" content="Retro Game Boy themed Tetris with piece stats, T-spin bonuses, and harder scaling." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg">
+      <div class="bg__grid"></div>
+      <div class="bg__glow"></div>
+    </div>
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand__logo" aria-hidden="true">▦</div>
+        <div class="brand__text">
+          <div class="brand__title">GB TETRIS</div>
+          <div class="brand__subtitle">GAME BOY EDITION</div>
+        </div>
+      </div>
+
+      <div class="topbar__actions">
+        <button id="btnMute" class="btn btn--ghost" type="button" aria-pressed="false">
+          <span class="btn__icon" aria-hidden="true">🔊</span>
+          <span class="btn__label">SFX: ON</span>
+        </button>
+        <button id="btnRestart" class="btn" type="button">
+          <span class="btn__icon" aria-hidden="true">↻</span>
+          <span class="btn__label">RESTART (R)</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel panel--game" aria-label="Tetris game">
+        <div class="panel__header">
+          <div class="panel__title">PLAYFIELD</div>
+          <div class="panel__hint">
+            <span class="kbd">←</span><span class="kbd">→</span> Move
+            <span class="sep">·</span>
+            <span class="kbd">↓</span> Soft drop
+            <span class="sep">·</span>
+            <span class="kbd">↑</span>/<span class="kbd">X</span> Rotate
+            <span class="sep">·</span>
+            <span class="kbd">Z</span> CCW
+            <span class="sep">·</span>
+            <span class="kbd">Space</span> Hard drop
+            <span class="sep">·</span>
+            <span class="kbd">P</span> Pause
+          </div>
+        </div>
+
+        <div class="stage">
+          <canvas id="board" width="300" height="600" aria-label="Tetris board" role="img"></canvas>
+
+          <div id="overlayPause" class="overlay overlay--hidden" aria-hidden="true">
+            <div class="overlay__card">
+              <div class="overlay__title">— PAUSED —</div>
+              <div class="overlay__text">Press <span class="kbd kbd--wide">P</span> to resume</div>
+            </div>
+          </div>
+
+          <div id="overlayGameOver" class="overlay overlay--hidden" aria-hidden="true">
+            <div class="overlay__card">
+              <div class="overlay__title">GAME OVER</div>
+              <div class="overlay__text">Press <span class="kbd kbd--wide">R</span> to restart</div>
+              <div class="overlay__actions">
+                <button id="btnRestart2" class="btn" type="button">
+                  <span class="btn__icon" aria-hidden="true">↻</span>
+                  <span class="btn__label">RESTART</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="fxLayer" class="fx" aria-hidden="true"></div>
+        </div>
+      </section>
+
+      <aside class="panel panel--side" aria-label="Game info">
+        <div class="panel__header">
+          <div class="panel__title">DASHBOARD</div>
+          <div class="panel__hint">High score saved</div>
+        </div>
+
+        <div class="card">
+          <div class="card__title">NEXT</div>
+          <canvas id="next" width="140" height="140" aria-label="Next piece" role="img"></canvas>
+          <div class="card__subtext">Try wall kicks near edges!</div>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="stat__label">SCORE</div>
+            <div class="stat__value" id="statScore">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat__label">LINES</div>
+            <div class="stat__value" id="statLines">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat__label">LEVEL</div>
+            <div class="stat__value" id="statLevel">1</div>
+          </div>
+          <div class="stat stat--accent">
+            <div class="stat__label">BEST</div>
+            <div class="stat__value" id="statHigh">0</div>
+          </div>
+        </div>
+
+        <!-- Combo display -->
+        <div class="combo-display" id="comboDisplay">
+          <span class="combo-display__label">COMBO</span>
+          <span class="combo-display__value" id="statCombo">0×</span>
+        </div>
+
+        <!-- Piece statistics -->
+        <div class="piece-stats">
+          <div class="piece-stats__title">PIECE STATS</div>
+          <div class="piece-stats__grid" id="pieceStatsGrid">
+            <!-- filled by JS -->
+          </div>
+        </div>
+
+        <div class="card card--keys">
+          <div class="card__title">CONTROLS</div>
+          <ul class="keys">
+            <li><span class="kbd">←</span><span class="kbd">→</span> Move</li>
+            <li><span class="kbd">↓</span> Soft drop</li>
+            <li><span class="kbd kbd--wide">Space</span> Hard drop</li>
+            <li><span class="kbd">↑</span>/<span class="kbd">X</span> Rotate CW</li>
+            <li><span class="kbd">Z</span> Rotate CCW</li>
+            <li><span class="kbd">P</span> Pause / <span class="kbd">R</span> Restart</li>
+            <li><span class="kbd">M</span> Mute</li>
+          </ul>
+        </div>
+
+        <div class="footerNote">
+          T-Spins score 400/800/1200 × level.<br>
+          Level scaling is brutal after Lv.5.
+        </div>
+      </aside>
+    </main>
+
+    <script src="tetris.js" defer></script>
+  </body>
+</html>

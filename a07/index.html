@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tetris — Dino Bonus (LAN optional)</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <div class="logo">T</div>
+        <div>
+          <div class="title">Tetris</div>
+          <div class="subtitle">Dino Bonus • LAN optional</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="btnStart" class="btn primary">Start</button>
+        <button id="btnPause" class="btn">Pause (P)</button>
+        <button id="btnReset" class="btn danger">Reset</button>
+        <button id="btnAudio" class="btn">Audio: Off</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel">
+        <div class="panelTitle">Game</div>
+
+        <div class="games">
+          <div class="gameArea">
+            <div class="gameLabel">Player 1</div>
+            <canvas id="canvasP1" width="300" height="600"></canvas>
+            <div class="hud">
+              <div class="stat"><span>Score</span><strong id="scoreP1">0</strong></div>
+              <div class="stat"><span>Lines</span><strong id="linesP1">0</strong></div>
+              <div class="stat"><span>Level</span><strong id="levelP1">1</strong></div>
+              <div class="stat"><span>Next</span></div>
+              <canvas id="nextP1" width="120" height="120"></canvas>
+            </div>
+          </div>
+
+          <div class="gameArea">
+            <div class="gameLabel">Player 2 (LAN optional)</div>
+            <canvas id="canvasP2" width="300" height="600"></canvas>
+            <div class="hud">
+              <div class="stat"><span>Score</span><strong id="scoreP2">0</strong></div>
+              <div class="stat"><span>Lines</span><strong id="linesP2">0</strong></div>
+              <div class="stat"><span>Level</span><strong id="levelP2">1</strong></div>
+              <div class="stat"><span>Next</span></div>
+              <canvas id="nextP2" width="120" height="120"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="help">
+          <div><strong>Controls:</strong> ← → ↓ move • ↑ hard drop • Space rotate • P pause</div>
+          <div><strong>Dino bonus:</strong> sometimes appears and eats blocks (big surprise).</div>
+        </div>
+      </section>
+
+      <aside class="side">
+        <section class="panel">
+          <div class="panelTitle">LAN Multiplayer (optional)</div>
+          <div class="lan">
+            <div class="row">
+              <button id="btnHost" class="btn">Host</button>
+              <button id="btnJoin" class="btn">Join</button>
+            </div>
+            <div class="row">
+              <input id="wsUrl" class="input" placeholder="ws://192.168.1.20:8787" />
+            </div>
+            <div id="netStatus" class="netStatus">Offline</div>
+            <div class="hint">
+              Multiplayer uses a simple WebSocket relay server. See `README.md`.
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panelTitle">Scoreboard</div>
+          <div class="scoreboard">
+            <div class="row">
+              <input id="nameInput" class="input" maxlength="18" placeholder="Your name" />
+              <button id="btnSaveScore" class="btn primary">Save score</button>
+            </div>
+            <div id="scoreList" class="scoreList"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panelTitle">Notes</div>
+          <div class="notes">
+            Audio is original synth (no copyrighted tracks). It changes as your level rises.
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <div id="toast" class="toast" aria-live="polite"></div>
+
+    <script src="./audio.js"></script>
+    <script src="./net.js"></script>
+    <script src="./game.js"></script>
+  </body>
+</html>
+

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tetris</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1>Tetris</h1>
+      <p class="tagline">Arrows move · Space rotates · ↑ hard drop · soft music after first key or click</p>
+    </header>
+
+    <main class="main">
+      <aside class="panel panel-left">
+        <section class="card">
+          <h2>Score</h2>
+          <p class="stat-big" id="score">0</p>
+          <dl class="stats">
+            <div><dt>Level</dt><dd id="level">1</dd></div>
+            <div><dt>Lines</dt><dd id="lines">0</dd></div>
+          </dl>
+        </section>
+        <section class="card">
+          <h2>Next</h2>
+          <canvas id="next" width="120" height="120" aria-label="Next piece"></canvas>
+        </section>
+        <section class="card controls">
+          <h2>Controls</h2>
+          <ul>
+            <li><kbd>←</kbd> <kbd>→</kbd> move</li>
+            <li><kbd>↓</kbd> soft drop</li>
+            <li><kbd>↑</kbd> hard drop</li>
+            <li><kbd>Space</kbd> rotate</li>
+            <li><kbd>P</kbd> pause</li>
+          </ul>
+        </section>
+      </aside>
+
+      <div class="stage">
+        <canvas id="game" width="300" height="600" tabindex="0" aria-label="Playfield"></canvas>
+        <div id="overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="overlay-title">
+          <div class="overlay-inner">
+            <h2 id="overlay-title">Paused</h2>
+            <p id="overlay-msg">Press P to resume.</p>
+            <button type="button" id="btn-resume" class="btn primary">Resume</button>
+            <button type="button" id="btn-play-again" class="btn primary hidden">Play again</button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="panel panel-right">
+        <section class="card">
+          <div class="card-head">
+            <h2>Hall of fame</h2>
+            <button type="button" id="btn-clear-board" class="btn small">Clear</button>
+          </div>
+          <ol id="leaderboard" class="leaderboard"></ol>
+          <p class="hint">When a game ends, add your name to save your score.</p>
+        </section>
+      </aside>
+    </main>
+
+    <footer class="footer">
+      <span>Scores are saved in this browser only.</span>
+    </footer>
+  </div>
+
+  <div id="name-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box">
+      <h2 id="modal-title">Game over</h2>
+      <p class="modal-score">Final score: <strong id="final-score">0</strong></p>
+      <label for="player-name">Your name</label>
+      <input type="text" id="player-name" maxlength="24" placeholder="Enter name" autocomplete="nickname" />
+      <div class="modal-actions">
+        <button type="button" id="btn-save-score" class="btn primary">Save to hall of fame</button>
+        <button type="button" id="btn-play-again-modal" class="btn">Play again</button>
+        <button type="button" id="btn-skip-save" class="btn">Skip saving</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

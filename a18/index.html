@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Creative Tetris Game</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="startScreen">
+  <div id="startTitle">🧩 TETRIS ADVENTURE</div>
+  <button id="startBtn">▶ Start Game</button>
+</div>
+
+<h1>🧩 Let's Play Tetris Game</h1>
+
+<canvas id="game" width="240" height="400"></canvas>
+
+<!-- NEW CONTROLS -->
+<div id="controls">
+  <button id="pauseBtn">⏸ Pause</button>
+  <button id="restartBtn">🔄 Restart</button>
+</div>
+
+<div id="scoreboard">
+  <h3>Score: <span id="score">0</span></h3>
+
+  <input id="playerName" placeholder="Enter Name" />
+  <button onclick="saveScore()">Save Score</button>
+
+  <div id="leaderboardBox">
+    <div id="leaderHeader">
+      <h3>🏆 Leaderboard</h3>
+      <button id="clr">Clear</button>
+    </div>
+    <ul id="leaderboard"></ul>
+  </div>
+</div>
+
+<!-- AUDIO (UNCHANGED) -->
+<audio id="bgMusic" src="the_mountain-game-game-music-508018(1).mp3" loop></audio>
+<audio id="hitSound" src="blendertimer-censor-beep-1-second-8112.mp3"></audio>
+
+<script src="script.js"></script>
+
+</body>
+</html>

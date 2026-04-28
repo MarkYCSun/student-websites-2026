@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tetris</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(900px 500px at 20% 15%, rgba(255, 240, 200, 0.12), rgba(0,0,0,0) 60%),
+        radial-gradient(700px 420px at 85% 20%, rgba(255, 75, 110, 0.10), rgba(0,0,0,0) 55%),
+        radial-gradient(900px 700px at 55% 80%, rgba(40, 210, 140, 0.10), rgba(0,0,0,0) 60%),
+        linear-gradient(160deg, #0b1a2e 0%, #0b2431 50%, #0a1224 100%);
+      font-family: "JetBrains Mono", "SF Mono", Consolas, monospace;
+      color: #f6f7fb;
+      overflow-x: hidden;
+    }
+    body::before{
+      content:"";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(255,255,255,0.95) 0 2px, rgba(255,255,255,0) 3px),
+        radial-gradient(circle at 28% 62%, rgba(255,255,255,0.8) 0 1px, rgba(255,255,255,0) 3px),
+        radial-gradient(circle at 56% 26%, rgba(255,255,255,0.9) 0 2px, rgba(255,255,255,0) 3px),
+        radial-gradient(circle at 73% 48%, rgba(255,255,255,0.75) 0 1px, rgba(255,255,255,0) 3px),
+        radial-gradient(circle at 88% 78%, rgba(255,255,255,0.9) 0 2px, rgba(255,255,255,0) 3px);
+      opacity: 0.55;
+      filter: drop-shadow(0 0 6px rgba(255,255,255,0.22));
+      transform: translateY(-12px);
+      animation: snowFloat 10s linear infinite;
+    }
+    @keyframes snowFloat {
+      from { transform: translateY(-12px); }
+      to { transform: translateY(48px); }
+    }
+
+    h1 {
+      margin: 0 0 0.75rem;
+      font-weight: 600;
+      font-size: 1.5rem;
+      letter-spacing: 0.08em;
+      color: #fffbf2;
+      text-shadow: 0 3px 18px rgba(255, 200, 120, 0.14);
+      user-select: none;
+    }
+    .title {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(12, 18, 28, 0.42);
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+    }
+    .title .badge{
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #7ee787;
+      box-shadow:
+        0 0 0 4px rgba(126, 231, 135, 0.12),
+        0 0 22px rgba(126, 231, 135, 0.25);
+    }
+    .title .snow{
+      color: rgba(255,255,255,0.92);
+      text-shadow: 0 0 12px rgba(255,255,255,0.25);
+    }
+    .wrap {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .boardWrap{
+      position: relative;
+      padding: 16px;
+      border-radius: 16px;
+      background:
+        radial-gradient(1200px 700px at 30% 10%, rgba(255,255,255,0.10), rgba(0,0,0,0) 65%),
+        linear-gradient(135deg, rgba(255, 55, 95, 0.18), rgba(40, 210, 140, 0.12));
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 18px 60px rgba(0,0,0,0.45);
+    }
+    .lights{
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      top: -14px;
+      height: 18px;
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+    .bulb{
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.25), 0 0 18px rgba(255,255,255,0.14);
+      border: 1px solid rgba(0,0,0,0.25);
+      transform: rotate(6deg);
+      animation: twinkle 1.8s ease-in-out infinite;
+    }
+    .bulb:nth-child(2n){ animation-duration: 2.4s; transform: rotate(-5deg); }
+    .bulb:nth-child(3n){ animation-duration: 2.1s; }
+    @keyframes twinkle{
+      0%,100%{ filter: brightness(0.95); transform: translateY(0) rotate(var(--r, 6deg)); opacity: 0.92; }
+      50%{ filter: brightness(1.18); transform: translateY(2px) rotate(var(--r, 6deg)); opacity: 1; }
+    }
+    canvas {
+      display: block;
+      border-radius: 10px;
+      border: 4px solid rgba(255,255,255,0.10);
+      box-shadow:
+        0 10px 34px rgba(0, 0, 0, 0.55),
+        0 0 0 6px rgba(255, 55, 95, 0.14),
+        0 0 0 12px rgba(40, 210, 140, 0.10);
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      background: #0d1117;
+    }
+    .panel {
+      min-width: 140px;
+      padding: 1rem;
+      background: rgba(10, 18, 28, 0.78);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      font-size: 0.875rem;
+      line-height: 1.6;
+      box-shadow: 0 14px 48px rgba(0,0,0,0.35);
+    }
+    .panel h2 {
+      margin: 0 0 0.5rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.70);
+    }
+    .panel p { margin: 0.35rem 0; }
+    .controls kbd {
+      display: inline-block;
+      padding: 0.1em 0.45em;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 4px;
+      font-size: 0.8em;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px dashed rgba(255,255,255,0.14);
+    }
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      user-select: none;
+      cursor: pointer;
+    }
+    .toggle input { accent-color: #7ee787; }
+
+    #dinoRain{
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 50;
+    }
+    .dino{
+      position: absolute;
+      top: -60px;
+      font-size: 34px;
+      filter: drop-shadow(0 10px 12px rgba(0,0,0,0.45));
+      opacity: 0.95;
+      animation: dinoFall linear forwards;
+      will-change: transform, opacity;
+    }
+    @keyframes dinoFall{
+      0% { transform: translate3d(0, -20px, 0) rotate(-8deg); opacity: 0.0; }
+      10% { opacity: 0.95; }
+      100% { transform: translate3d(var(--dx, 0px), calc(100vh + 120px), 0) rotate(var(--rot, 14deg)); opacity: 0.0; }
+    }
+    #status {
+      margin-top: 0.75rem;
+      color: #9ae6ff;
+    }
+    #gameOver {
+      color: #ffb4a5;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="title"><span class="snow">❄</span><span class="badge"></span> Tetris <span class="snow">❄</span></h1>
+  <div class="wrap">
+    <div class="boardWrap" aria-label="Game board frame">
+      <div class="lights" aria-hidden="true">
+        <span class="bulb" style="background:#ff4d6d"></span>
+        <span class="bulb" style="background:#ffd166"></span>
+        <span class="bulb" style="background:#7ee787"></span>
+        <span class="bulb" style="background:#79c0ff"></span>
+        <span class="bulb" style="background:#ff4d6d"></span>
+        <span class="bulb" style="background:#ffd166"></span>
+        <span class="bulb" style="background:#7ee787"></span>
+        <span class="bulb" style="background:#79c0ff"></span>
+        <span class="bulb" style="background:#ff4d6d"></span>
+        <span class="bulb" style="background:#ffd166"></span>
+      </div>
+      <canvas id="game" width="320" height="640" aria-label="Tetris playfield"></canvas>
+    </div>
+    <div class="panel">
+      <h2>Score</h2>
+      <p id="score">0</p>
+      <h2 style="margin-top: 1rem">Lines</h2>
+      <p id="lines">0</p>
+      <h2 style="margin-top: 1rem">Controls</h2>
+      <div class="controls">
+        <p><kbd>←</kbd> <kbd>→</kbd> Move</p>
+        <p><kbd>↓</kbd> Soft drop</p>
+        <p><kbd>↑</kbd> Hard drop</p>
+        <p><kbd>Space</kbd> Rotate</p>
+        <p style="margin-top:0.75rem;color:rgba(255,255,255,0.72)">After game over: <kbd>R</kbd> to restart</p>
+      </div>
+      <div class="row">
+        <span style="color:rgba(255,255,255,0.75);font-size:0.85em">Sound</span>
+        <label class="toggle"><input id="soundToggle" type="checkbox" checked /> On</label>
+      </div>
+      <p id="status"></p>
+    </div>
+  </div>
+  <div id="dinoRain" aria-hidden="true"></div>
+  <audio id="roarAudio" src="roarsound.mp3" preload="auto"></audio>
+  <audio id="bgmAudio" src="gamesound.mp3" preload="auto" loop></audio>
+
+  <script>
+    (function () {
+      const COLS = 10;
+      const ROWS = 20;
+      const CELL = 32;
+      const canvas = document.getElementById("game");
+      const ctx = canvas.getContext("2d");
+      const scoreEl = document.getElementById("score");
+      const linesEl = document.getElementById("lines");
+      const statusEl = document.getElementById("status");
+      const soundToggleEl = document.getElementById("soundToggle");
+      const dinoRainEl = document.getElementById("dinoRain");
+      const roarAudioEl = document.getElementById("roarAudio");
+      const bgmAudioEl = document.getElementById("bgmAudio");
+
+      // --- MIDI-style SFX (Web Audio) ---
+      let audio = null;
+      let master = null;
+      let sfxEnabled = true;
+
+      function ensureAudio() {
+        if (!sfxEnabled) return;
+        if (audio) return;
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        audio = new AC();
+        master = audio.createGain();
+        master.gain.value = 0.22;
+        master.connect(audio.destination);
+      }
+
+      function midiToFreq(n) {
+        return 440 * Math.pow(2, (n - 69) / 12);
+      }
+
+      function playNote(note, durMs, type, gain, whenMs = 0) {
+        if (!sfxEnabled) return;
+        ensureAudio();
+        if (!audio || !master) return;
+        if (audio.state === "suspended") audio.resume().catch(() => {});
+
+        const t0 = audio.currentTime + whenMs / 1000;
+        const dur = Math.max(0.01, durMs / 1000);
+
+        const osc = audio.createOscillator();
+        const g = audio.createGain();
+
+        osc.type = type || "triangle";
+        osc.frequency.value = midiToFreq(note);
+
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(Math.max(0.0001, gain ?? 0.25), t0 + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+
+        osc.connect(g);
+        g.connect(master);
+        osc.start(t0);
+        osc.stop(t0 + dur + 0.02);
+      }
+
+      function sfxMove() { playNote(76, 28, "square", 0.12); }
+      function sfxRotate() { playNote(79, 45, "triangle", 0.16); playNote(83, 45, "triangle", 0.10, 8); }
+      function sfxLock() { playNote(52, 60, "sine", 0.18); }
+      function sfxHardDrop() { playNote(64, 40, "sawtooth", 0.10); playNote(57, 60, "sawtooth", 0.12, 25); }
+      function sfxClear(n) {
+        const base = 72; // C5-ish
+        const seq = n === 1 ? [0, 4, 7] : n === 2 ? [0, 4, 7, 12] : n === 3 ? [0, 3, 7, 12, 15] : [0, 4, 7, 12, 16, 19];
+        seq.forEach((st, i) => playNote(base + st, 70, "triangle", 0.14, i * 55));
+      }
+      function sfxGameOver() {
+        [72, 70, 67, 63, 60].forEach((n, i) => playNote(n, 160, "sine", 0.18, i * 120));
+      }
+
+      function startBgm() {
+        if (!sfxEnabled) return;
+        if (!bgmAudioEl) return;
+        try {
+          bgmAudioEl.volume = 0.35;
+          const p = bgmAudioEl.play();
+          if (p && typeof p.catch === "function") p.catch(() => {});
+        } catch (_) {}
+      }
+
+      function stopBgm() {
+        if (!bgmAudioEl) return;
+        try {
+          bgmAudioEl.pause();
+          bgmAudioEl.currentTime = 0;
+        } catch (_) {}
+      }
+
+      soundToggleEl?.addEventListener("change", () => {
+        sfxEnabled = !!soundToggleEl.checked;
+        if (!sfxEnabled && master) master.gain.value = 0.0;
+        if (sfxEnabled) {
+          ensureAudio();
+          if (master) master.gain.value = 0.22;
+        }
+        if (!sfxEnabled && roarAudioEl) {
+          try { roarAudioEl.pause(); } catch (_) {}
+        }
+        if (!sfxEnabled) stopBgm();
+        if (sfxEnabled) startBgm();
+      });
+
+      // --- Dino rain (starts at score >= 300) ---
+      const DINO_SCORE_START = 300;
+      let dinoMode = false;
+      let dinoInterval = null;
+      let lastRoarAt = 0;
+
+      function playRoar() {
+        if (!sfxEnabled) return;
+        if (!roarAudioEl) return;
+        const now = performance.now();
+        if (now - lastRoarAt < 1200) return; // cooldown
+        lastRoarAt = now;
+        try {
+          roarAudioEl.volume = 0.6;
+          roarAudioEl.currentTime = 0;
+          const p = roarAudioEl.play();
+          if (p && typeof p.catch === "function") p.catch(() => {});
+        } catch (_) {}
+      }
+
+      function clearDinos() {
+        if (dinoInterval) {
+          clearInterval(dinoInterval);
+          dinoInterval = null;
+        }
+        dinoMode = false;
+        if (dinoRainEl) dinoRainEl.replaceChildren();
+      }
+
+      function spawnDino() {
+        if (!dinoRainEl) return;
+        const el = document.createElement("div");
+        el.className = "dino";
+        el.textContent = Math.random() < 0.55 ? "🦖" : "🦕";
+        const x = Math.random() * 100;
+        const drift = (Math.random() * 2 - 1) * 120;
+        const rot = (Math.random() * 2 - 1) * 25;
+        const dur = 2400 + Math.random() * 2200;
+        el.style.left = x + "vw";
+        el.style.setProperty("--dx", drift.toFixed(1) + "px");
+        el.style.setProperty("--rot", rot.toFixed(1) + "deg");
+        el.style.animationDuration = dur.toFixed(0) + "ms";
+        el.style.fontSize = (26 + Math.random() * 24).toFixed(0) + "px";
+        el.style.opacity = (0.75 + Math.random() * 0.25).toFixed(2);
+        dinoRainEl.appendChild(el);
+        el.addEventListener("animationend", () => el.remove(), { once: true });
+      }
+
+      function startDinoModeIfNeeded(prevScore, nextScore) {
+        if (dinoMode) return;
+        if (prevScore < DINO_SCORE_START && nextScore >= DINO_SCORE_START) {
+          dinoMode = true;
+          playRoar();
+          // initial burst
+          for (let i = 0; i < 10; i++) setTimeout(spawnDino, i * 80);
+          dinoInterval = setInterval(spawnDino, 260);
+        }
+      }
+
+      function setScore(next) {
+        const prev = score;
+        score = next;
+        scoreEl.textContent = String(score);
+        startDinoModeIfNeeded(prev, score);
+      }
+
+      function addScore(delta) {
+        if (delta === 0) return;
+        setScore(score + delta);
+      }
+
+      /** Each cell is [col, row] in a 4×4 box; rotations from CW grid spins. */
+      function rotateGridCW(g) {
+        const n = 4;
+        const ng = Array.from({ length: n }, () => Array(n).fill(false));
+        for (let y = 0; y < n; y++) {
+          for (let x = 0; x < n; x++) {
+            ng[x][n - 1 - y] = g[y][x];
+          }
+        }
+        return ng;
+      }
+
+      function gridToCells(g) {
+        const c = [];
+        for (let y = 0; y < 4; y++) {
+          for (let x = 0; x < 4; x++) {
+            if (g[y][x]) c.push([x, y]);
+          }
+        }
+        return c;
+      }
+
+      function fourRotations(seed) {
+        const rots = [];
+        let g = seed;
+        for (let i = 0; i < 4; i++) {
+          rots.push(gridToCells(g));
+          g = rotateGridCW(g);
+        }
+        return rots;
+      }
+
+      const empty = () =>
+        Array.from({ length: 4 }, () => Array(4).fill(false));
+
+      const BAG = [
+        {
+          name: "I",
+          color: "#00f0f0",
+          rots: (function () {
+            const g = empty();
+            g[1][0] = g[1][1] = g[1][2] = g[1][3] = true;
+            return fourRotations(g);
+          })(),
+        },
+        {
+          name: "O",
+          color: "#f0f000",
+          rots: (function () {
+            const g = empty();
+            g[1][1] = g[1][2] = g[2][1] = g[2][2] = true;
+            const cells = gridToCells(g);
+            return [cells, cells, cells, cells];
+          })(),
+        },
+        {
+          name: "T",
+          color: "#a000f0",
+          rots: (function () {
+            const g = empty();
+            g[0][1] = true;
+            g[1][0] = g[1][1] = g[1][2] = true;
+            return fourRotations(g);
+          })(),
+        },
+        {
+          name: "S",
+          color: "#00f000",
+          rots: (function () {
+            const g = empty();
+            g[0][1] = g[0][2] = g[1][0] = g[1][1] = true;
+            return fourRotations(g);
+          })(),
+        },
+        {
+          name: "Z",
+          color: "#f00000",
+          rots: (function () {
+            const g = empty();
+            g[0][0] = g[0][1] = g[1][1] = g[1][2] = true;
+            return fourRotations(g);
+          })(),
+        },
+        {
+          name: "J",
+          color: "#0000f0",
+          rots: (function () {
+            const g = empty();
+            g[0][0] = true;
+            g[1][0] = g[1][1] = g[1][2] = true;
+            return fourRotations(g);
+          })(),
+        },
+        {
+          name: "L",
+          color: "#f0a000",
+          rots: (function () {
+            const g = empty();
+            g[0][2] = true;
+            g[1][0] = g[1][1] = g[1][2] = true;
+            return fourRotations(g);
+          })(),
+        },
+      ];
+
+      let board = [];
+      let piece = null;
+      let rotation = 0;
+      let px = 0;
+      let py = 0;
+      let score = 0;
+      let linesCleared = 0;
+      let gameOver = false;
+      let dropAccum = 0;
+      let last = performance.now();
+      let bag = [];
+      let softDrop = false;
+
+      function emptyBoard() {
+        board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+      }
+
+      function shuffle(a) {
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+      }
+
+      function nextFromBag() {
+        if (bag.length === 0) {
+          bag = BAG.map((_, i) => i);
+          shuffle(bag);
+        }
+        return BAG[bag.pop()];
+      }
+
+      function cellsFor(p, rot) {
+        return p.rots[rot % 4];
+      }
+
+      function valid(bc, x, y, rot) {
+        const cells = cellsFor(bc, rot);
+        for (const [dx, dy] of cells) {
+          const gx = x + dx;
+          const gy = y + dy;
+          if (gx < 0 || gx >= COLS || gy >= ROWS) return false;
+          if (gy >= 0 && board[gy][gx]) return false;
+        }
+        return true;
+      }
+
+      function tryRotate() {
+        const next = (rotation + 1) % 4;
+        const kicks = [0, -1, 1, -2, 2];
+        for (const k of kicks) {
+          if (valid(piece, px + k, py, next)) {
+            px += k;
+            rotation = next;
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function mergePiece() {
+        const cells = cellsFor(piece, rotation);
+        for (const [dx, dy] of cells) {
+          const gy = py + dy;
+          const gx = px + dx;
+          if (gy >= 0 && gy < ROWS && gx >= 0 && gx < COLS) {
+            board[gy][gx] = piece.color;
+          }
+        }
+      }
+
+      function clearLines() {
+        let cleared = 0;
+        for (let y = ROWS - 1; y >= 0; y--) {
+          if (board[y].every((c) => c !== null)) {
+            cleared++;
+            board.splice(y, 1);
+            board.unshift(Array(COLS).fill(null));
+            y++;
+          }
+        }
+        if (cleared > 0) {
+          sfxClear(cleared);
+          linesCleared += cleared;
+          const points = [0, 100, 300, 500, 800];
+          addScore(points[cleared] ?? 800);
+          linesEl.textContent = String(linesCleared);
+        }
+      }
+
+      function spawn() {
+        piece = nextFromBag();
+        rotation = 0;
+        px = 3;
+        py = -1;
+        if (!valid(piece, px, py, rotation)) {
+          gameOver = true;
+          statusEl.innerHTML = '<span id="gameOver">Game over — press R to restart</span>';
+          sfxGameOver();
+          clearDinos();
+          stopBgm();
+        }
+      }
+
+      function tickDrop(dt) {
+        if (gameOver || !piece) return;
+        const gravityMs = score >= 200 ? 400 : 500;
+        const base = softDrop ? 80 : gravityMs;
+        dropAccum += dt;
+        while (dropAccum >= base) {
+          dropAccum -= base;
+          if (valid(piece, px, py + 1, rotation)) {
+            py += 1;
+            if (softDrop) addScore(1);
+          } else {
+            mergePiece();
+            sfxLock();
+            clearLines();
+            spawn();
+            break;
+          }
+        }
+      }
+
+      function hardDrop() {
+        if (gameOver || !piece) return;
+        sfxHardDrop();
+        let d = 0;
+        while (valid(piece, px, py + 1, rotation)) {
+          py += 1;
+          d++;
+        }
+        addScore(d * 2);
+        mergePiece();
+        clearLines();
+        spawn();
+      }
+
+      function drawCell(x, y, color) {
+        const pad = 1;
+        ctx.fillStyle = color;
+        ctx.fillRect(x * CELL + pad, y * CELL + pad, CELL - pad * 2, CELL - pad * 2);
+        ctx.strokeStyle = "rgba(255,255,255,0.25)";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x * CELL + pad, y * CELL + pad, CELL - pad * 2, CELL - pad * 2);
+      }
+
+      function draw() {
+        ctx.fillStyle = "#0d1117";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        for (let y = 0; y < ROWS; y++) {
+          for (let x = 0; x < COLS; x++) {
+            if (board[y][x]) drawCell(x, y, board[y][x]);
+          }
+        }
+
+        if (piece && !gameOver) {
+          const cells = cellsFor(piece, rotation);
+          for (const [dx, dy] of cells) {
+            const gx = px + dx;
+            const gy = py + dy;
+            if (gy >= 0) drawCell(gx, gy, piece.color);
+          }
+        }
+
+        if (gameOver) {
+          ctx.fillStyle = "rgba(0,0,0,0.55)";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "#ff7b72";
+          ctx.font = "bold 20px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2);
+        }
+      }
+
+      function loop(now) {
+        const dt = now - last;
+        last = now;
+        tickDrop(dt);
+        draw();
+        requestAnimationFrame(loop);
+      }
+
+      function init() {
+        emptyBoard();
+        bag = [];
+        score = 0;
+        linesCleared = 0;
+        gameOver = false;
+        dropAccum = 0;
+        softDrop = false;
+        clearDinos();
+        scoreEl.textContent = "0";
+        linesEl.textContent = "0";
+        statusEl.textContent = "";
+        startBgm();
+        spawn();
+      }
+
+      window.addEventListener("keydown", (e) => {
+        if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " "].includes(e.key)) {
+          e.preventDefault();
+        }
+        // First user interaction: unlock audio on browsers that require it.
+        if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " ", "r", "R"].includes(e.key)) {
+          ensureAudio();
+          startBgm();
+        }
+        if (gameOver || !piece) {
+          if (e.key === "r" || e.key === "R") init();
+          return;
+        }
+
+        if (e.key === "ArrowLeft" && valid(piece, px - 1, py, rotation)) { px -= 1; sfxMove(); }
+        else if (e.key === "ArrowRight" && valid(piece, px + 1, py, rotation)) { px += 1; sfxMove(); }
+        else if (e.key === "ArrowDown") softDrop = true;
+        else if (e.key === "ArrowUp") hardDrop();
+        else if (e.key === " " || e.code === "Space") { if (tryRotate()) sfxRotate(); }
+      });
+
+      window.addEventListener("keyup", (e) => {
+        if (e.key === "ArrowDown") softDrop = false;
+      });
+
+      init();
+      requestAnimationFrame((t) => {
+        last = t;
+        requestAnimationFrame(loop);
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Holiday Tetris</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Quicksand:wght@500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --pine: #0c1f16;
+      --pine-mid: #143024;
+      --berry: #8b1538;
+      --berry-deep: #5c0e24;
+      --gold: #e8c547;
+      --gold-dim: #c9a227;
+      --cream: #fdf6e8;
+      --frost: rgba(255, 255, 255, 0.88);
+      --holly-green: #1e5c3a;
+    }
+    * { box-sizing: border-box; }
+    @keyframes snowfall {
+      0% { transform: translateY(-2vh) translateX(0) rotate(0deg); opacity: 0.95; }
+      100% { transform: translateY(105vh) translateX(18px) rotate(200deg); opacity: 0.25; }
+    }
+    @keyframes twinkle {
+      0%, 100% { filter: brightness(1); box-shadow: 0 0 6px currentColor; }
+      50% { filter: brightness(1.35); box-shadow: 0 0 14px currentColor; }
+    }
+    .snow-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .snowflake {
+      position: absolute;
+      top: -4vh;
+      color: var(--frost);
+      font-size: 0.65rem;
+      text-shadow: 0 0 4px rgba(255, 255, 255, 0.6);
+      animation: snowfall linear infinite;
+      opacity: 0.85;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Quicksand", "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(ellipse 120% 80% at 50% -20%, rgba(139, 21, 56, 0.35) 0%, transparent 50%),
+        radial-gradient(ellipse 80% 50% at 100% 100%, rgba(30, 92, 58, 0.4) 0%, transparent 45%),
+        linear-gradient(165deg, var(--pine-mid) 0%, var(--pine) 40%, #070f0c 100%);
+      color: var(--cream);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+    .festive-main {
+      position: relative;
+      z-index: 2;
+      max-width: 100%;
+      padding-bottom: 2.5rem;
+    }
+    .corner-deco {
+      position: absolute;
+      width: 72px;
+      height: 72px;
+      pointer-events: none;
+      opacity: 0.92;
+      z-index: 0;
+    }
+    .corner-deco.tl { top: -28px; left: -40px; transform: rotate(-12deg); }
+    .corner-deco.tr { top: -28px; right: -40px; transform: scaleX(-1) rotate(-12deg); }
+    .corner-deco.bl { bottom: -36px; left: -36px; transform: rotate(8deg); }
+    .corner-deco.br { bottom: -36px; right: -36px; transform: scaleX(-1) rotate(8deg); }
+    header.title-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.15rem;
+    }
+    h1 {
+      margin: 0;
+      font-family: "Mountains of Christmas", cursive;
+      font-weight: 700;
+      font-size: clamp(2rem, 6vw, 2.75rem);
+      letter-spacing: 0.02em;
+      color: var(--cream);
+      text-shadow:
+        0 0 20px rgba(232, 197, 71, 0.45),
+        0 2px 0 var(--berry-deep),
+        0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 0.88rem;
+      color: rgba(253, 246, 232, 0.72);
+      margin: 0 0 1rem;
+      letter-spacing: 0.06em;
+    }
+    .subtitle .star { color: var(--gold); }
+    .wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      width: 100%;
+      max-width: 1180px;
+    }
+    .battle-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.85rem 1rem;
+      align-items: flex-start;
+      justify-content: center;
+      width: 100%;
+    }
+    .you-stack,
+    .opp-stack {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: center;
+    }
+    .net-panel {
+      background: linear-gradient(165deg, rgba(92, 14, 36, 0.92) 0%, rgba(12, 31, 22, 0.95) 100%);
+      border-radius: 12px;
+      padding: 0.85rem 0.9rem;
+      min-width: 168px;
+      max-width: 220px;
+      box-shadow: 0 0 0 2px rgba(232, 197, 71, 0.35), 0 10px 28px rgba(0, 0, 0, 0.4);
+      font-size: 0.78rem;
+      line-height: 1.45;
+      color: rgba(253, 246, 232, 0.88);
+    }
+    .net-panel h2 {
+      margin: 0 0 0.4rem;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(253, 246, 232, 0.65);
+    }
+    .net-panel input {
+      width: 100%;
+      margin: 0.2rem 0 0.45rem;
+      padding: 0.4rem 0.45rem;
+      border-radius: 6px;
+      border: 1px solid rgba(232, 197, 71, 0.35);
+      background: #0d1218;
+      color: #fdf6e8;
+      font: inherit;
+      font-size: 0.72rem;
+    }
+    .net-panel button {
+      width: 100%;
+      margin-top: 0.35rem;
+      padding: 0.4rem;
+      font-size: 0.75rem;
+      border-radius: 6px;
+      border: 1px solid var(--gold);
+      background: linear-gradient(180deg, #2d8f4e, #1e5c3a);
+      color: var(--cream);
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .net-panel button + button {
+      margin-top: 0.25rem;
+      background: linear-gradient(180deg, #6b2130, #3a0a18);
+    }
+    .net-status {
+      margin: 0.5rem 0 0;
+      font-size: 0.72rem;
+      color: var(--gold);
+      word-break: break-word;
+    }
+    .net-hint {
+      margin: 0 0 0.35rem;
+      font-size: 0.68rem;
+      color: rgba(253, 246, 232, 0.65);
+    }
+    .stats-remote h2 {
+      font-size: 0.65rem;
+    }
+
+    .hall-of-fame {
+      width: 100%;
+      max-width: 1100px;
+      margin-top: 0.35rem;
+    }
+    .hof-inner {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: stretch;
+      justify-content: center;
+      background: linear-gradient(165deg, rgba(12, 31, 22, 0.92) 0%, rgba(30, 92, 58, 0.25) 100%);
+      border-radius: 12px;
+      padding: 1rem 1.1rem 1.1rem;
+      box-shadow: 0 0 0 2px rgba(232, 197, 71, 0.28), 0 10px 28px rgba(0, 0, 0, 0.35);
+    }
+    .hof-col {
+      flex: 1 1 220px;
+      min-width: 200px;
+    }
+    .hof-title {
+      margin: 0 0 0.35rem;
+      font-family: "Mountains of Christmas", cursive;
+      font-size: 1.45rem;
+      color: #fdf6e8;
+    }
+    .hof-hint {
+      margin: 0 0 0.65rem;
+      font-size: 0.76rem;
+      line-height: 1.45;
+      color: rgba(253, 246, 232, 0.72);
+    }
+    .hof-save {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .hof-save input {
+      flex: 1 1 140px;
+      min-width: 120px;
+      padding: 0.45rem 0.5rem;
+      border-radius: 6px;
+      border: 1px solid rgba(232, 197, 71, 0.35);
+      background: #0d1218;
+      color: #fdf6e8;
+      font: inherit;
+      font-size: 0.85rem;
+    }
+    .hof-save button#save-score {
+      padding: 0.45rem 0.75rem;
+      border-radius: 6px;
+      border: 2px solid var(--gold);
+      background: linear-gradient(180deg, #2d8f4e, #1e5c3a);
+      color: var(--cream);
+      font-weight: 600;
+      cursor: pointer;
+      font: inherit;
+    }
+    .hof-save button#save-score:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    button.hof-secondary {
+      margin-top: 0.25rem;
+      padding: 0.35rem 0.65rem;
+      font-size: 0.75rem;
+      border-radius: 6px;
+      border: 1px solid rgba(232, 197, 71, 0.35);
+      background: rgba(0, 0, 0, 0.25);
+      color: rgba(253, 246, 232, 0.85);
+      cursor: pointer;
+      font: inherit;
+    }
+    .hof-sub {
+      margin: 0 0 0.4rem;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(253, 246, 232, 0.65);
+    }
+    .hof-live {
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 0.68rem;
+      color: var(--gold);
+    }
+    .score-list {
+      margin: 0;
+      padding: 0 0 0 1.1rem;
+      font-size: 0.8rem;
+      line-height: 1.55;
+      color: rgba(253, 246, 232, 0.88);
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .score-list li {
+      margin-bottom: 0.2rem;
+    }
+    .score-list .hi-score {
+      color: var(--gold);
+      font-variant-numeric: tabular-nums;
+    }
+    .game-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .fairy-lights {
+      display: flex;
+      gap: 10px;
+      padding: 0 4px 6px;
+      justify-content: center;
+      flex-wrap: wrap;
+      max-width: 320px;
+    }
+    .fairy-lights span {
+      width: 11px;
+      height: 14px;
+      border-radius: 50% 50% 45% 45%;
+      position: relative;
+      animation: twinkle 2.2s ease-in-out infinite;
+    }
+    .fairy-lights span::before {
+      content: "";
+      position: absolute;
+      top: -5px;
+      left: 50%;
+      width: 2px;
+      height: 6px;
+      margin-left: -1px;
+      background: #2a1810;
+      border-radius: 1px;
+    }
+    .fairy-lights span:nth-child(6n + 1) { background: #c41e3a; color: #ff4466; animation-delay: 0s; }
+    .fairy-lights span:nth-child(6n + 2) { background: #228b22; color: #44ff66; animation-delay: 0.3s; }
+    .fairy-lights span:nth-child(6n + 3) { background: #ffd700; color: #ffee88; animation-delay: 0.6s; }
+    .fairy-lights span:nth-child(6n + 4) { background: #4169e1; color: #88aaff; animation-delay: 0.9s; }
+    .fairy-lights span:nth-child(6n + 5) { background: #ff6b6b; color: #ff8888; animation-delay: 1.2s; }
+    .fairy-lights span:nth-child(6n + 6) { background: #fffacd; color: #ffffcc; animation-delay: 1.5s; }
+    .canvas-frame {
+      padding: 10px;
+      border-radius: 14px;
+      background: linear-gradient(145deg, var(--berry) 0%, var(--berry-deep) 55%, #3a0a18 100%);
+      box-shadow:
+        0 0 0 3px var(--gold-dim),
+        0 0 0 6px var(--holly-green),
+        0 18px 48px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+    .canvas-frame canvas {
+      display: block;
+      border-radius: 8px;
+      vertical-align: middle;
+    }
+    .gift-ribbon {
+      height: 10px;
+      width: min(280px, 90vw);
+      margin-top: 2px;
+      border-radius: 4px;
+      background: repeating-linear-gradient(
+        90deg,
+        #c41e3a 0px,
+        #c41e3a 14px,
+        #fdf6e8 14px,
+        #fdf6e8 28px
+      );
+      opacity: 0.9;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    }
+    aside.stats-panel {
+      background: linear-gradient(160deg, rgba(30, 92, 58, 0.95) 0%, rgba(12, 31, 22, 0.98) 100%);
+      border-radius: 12px;
+      padding: 1rem 1.15rem 1.1rem;
+      min-width: 148px;
+      box-shadow:
+        0 0 0 2px rgba(232, 197, 71, 0.45),
+        0 12px 32px rgba(0, 0, 0, 0.45);
+      position: relative;
+      overflow: hidden;
+    }
+    aside.stats-panel::before {
+      content: "✦ ✧ ✦";
+      display: block;
+      text-align: center;
+      font-size: 0.7rem;
+      letter-spacing: 0.35em;
+      color: var(--gold);
+      opacity: 0.85;
+      margin-bottom: 0.35rem;
+    }
+    aside.stats-panel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath fill='%23ffffff' fill-opacity='0.04' d='M20 2l2 6h6l-5 4 2 6-5-4-5 4 2-6-5-4h6z'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    aside h2 {
+      margin: 0 0 0.35rem;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(253, 246, 232, 0.65);
+      font-weight: 600;
+    }
+    .stat {
+      font-size: 1.32rem;
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 0.85rem;
+      color: var(--gold);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    }
+    .next-canvas {
+      display: block;
+      margin-top: 0.3rem;
+      border-radius: 6px;
+      background: #081510;
+      box-shadow: inset 0 0 0 1px rgba(232, 197, 71, 0.2);
+    }
+    .help {
+      margin-top: 0.85rem;
+      font-size: 0.78rem;
+      line-height: 1.6;
+      color: rgba(253, 246, 232, 0.7);
+      position: relative;
+      z-index: 1;
+    }
+    .help kbd {
+      display: inline-block;
+      padding: 0.1rem 0.32rem;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.35);
+      color: var(--cream);
+      font-size: 0.68rem;
+      border: 1px solid rgba(232, 197, 71, 0.35);
+    }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 18, 12, 0.88);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+    .overlay.visible { display: flex; }
+    .overlay-inner {
+      text-align: center;
+      padding: 2rem 2.25rem;
+      border-radius: 14px;
+      background: linear-gradient(165deg, var(--berry-deep) 0%, var(--pine) 100%);
+      box-shadow: 0 0 0 3px var(--gold-dim), 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+    .overlay-inner h2 {
+      font-family: "Mountains of Christmas", cursive;
+      font-size: 2rem;
+      margin: 0 0 0.5rem;
+      color: var(--cream);
+    }
+    .overlay-inner p { color: rgba(253, 246, 232, 0.75); margin: 0.5rem 0 1rem; }
+    .overlay-inner kbd {
+      display: inline-block;
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(232, 197, 71, 0.4);
+      font-size: 0.85em;
+    }
+    button {
+      cursor: pointer;
+      font: inherit;
+      font-weight: 600;
+      padding: 0.55rem 1.35rem;
+      border-radius: 8px;
+      border: 2px solid var(--gold);
+      background: linear-gradient(180deg, #2d8f4e, #1e5c3a);
+      color: var(--cream);
+      box-shadow: 0 4px 0 #0f2d1c;
+    }
+    button:hover { filter: brightness(1.1); }
+    button:active { transform: translateY(2px); box-shadow: 0 2px 0 #0f2d1c; }
+
+    /* Score 300: falling dinosaur celebration */
+    .dino-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 15;
+      overflow: hidden;
+    }
+    .dino-faller {
+      position: absolute;
+      width: 110px;
+      height: 130px;
+      top: -150px;
+      left: 18%;
+      opacity: 0;
+      filter: drop-shadow(4px 12px 18px rgba(0, 0, 0, 0.4));
+    }
+    .dino-faller.go {
+      animation: dino-fall 5.2s cubic-bezier(0.33, 0, 0.2, 1) forwards;
+    }
+    @keyframes dino-fall {
+      0% {
+        top: -150px;
+        left: 18%;
+        opacity: 0;
+        transform: rotate(-14deg) scale(0.92);
+      }
+      5% { opacity: 1; }
+      22% { left: 58%; transform: rotate(10deg) scale(1); }
+      44% { left: 32%; transform: rotate(-8deg) scale(1.02); }
+      66% { left: 64%; transform: rotate(12deg) scale(1); }
+      88% { left: 42%; transform: rotate(-4deg) scale(0.98); }
+      100% {
+        top: 118vh;
+        left: 50%;
+        opacity: 1;
+        transform: rotate(6deg) scale(1);
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .dino-faller.go {
+        animation: dino-fall-simple 2s ease-out forwards;
+      }
+      @keyframes dino-fall-simple {
+        0% { top: -150px; left: 40%; opacity: 0; }
+        12% { opacity: 1; }
+        100% { top: 118vh; left: 40%; opacity: 1; }
+      }
+    }
+
+    /* Mega dinosaur: chomp bonus */
+    .mega-dino-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 18;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+      background: radial-gradient(ellipse at 70% 60%, rgba(20, 48, 36, 0.55) 0%, rgba(5, 10, 8, 0.88) 65%);
+    }
+    .mega-dino-overlay.show {
+      opacity: 1;
+    }
+    .mega-dino-wrap {
+      transform: translateX(18%) scale(0.65);
+      text-align: center;
+      filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.55));
+    }
+    .mega-dino-overlay.show .mega-dino-wrap {
+      animation: mega-dino-lunge 2.4s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+    }
+    @keyframes mega-dino-lunge {
+      0% { transform: translateX(55%) scale(0.5) rotate(6deg); }
+      18% { transform: translateX(8%) scale(1.05) rotate(-4deg); }
+      42% { transform: translateX(-4%) scale(1.12) rotate(0deg); }
+      55% { transform: translateX(-2%) scale(1.08) rotate(1deg); }
+      100% { transform: translateX(-8%) scale(1) rotate(0deg); }
+    }
+    .mega-dino-jaw-top {
+      transform-origin: 140px 200px;
+      animation: jaw-chomp-top 0.45s ease-in-out 3;
+    }
+    .mega-dino-jaw-bottom {
+      transform-origin: 140px 210px;
+      animation: jaw-chomp-bottom 0.45s ease-in-out 3;
+    }
+    @keyframes jaw-chomp-top {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(18deg); }
+    }
+    @keyframes jaw-chomp-bottom {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(-22deg); }
+    }
+    .mega-dino-msg {
+      margin: 0.35rem 0 0;
+      font-family: "Mountains of Christmas", cursive;
+      font-size: 1.65rem;
+      color: #fdf6e8;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+      letter-spacing: 0.04em;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .mega-dino-overlay.show .mega-dino-wrap {
+        animation: none;
+        transform: translateX(0) scale(0.85);
+      }
+      .mega-dino-jaw-top,
+      .mega-dino-jaw-bottom {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="snow-layer" aria-hidden="true">
+    <div class="snowflake" style="left:3%;animation-duration:11s;animation-delay:0s">❄</div>
+    <div class="snowflake" style="left:11%;animation-duration:14s;animation-delay:1s">✦</div>
+    <div class="snowflake" style="left:18%;animation-duration:9s;animation-delay:2.5s">❅</div>
+    <div class="snowflake" style="left:26%;animation-duration:12s;animation-delay:0.5s">❄</div>
+    <div class="snowflake" style="left:34%;animation-duration:16s;animation-delay:3s">✧</div>
+    <div class="snowflake" style="left:42%;animation-duration:10s;animation-delay:1.2s">❄</div>
+    <div class="snowflake" style="left:50%;animation-duration:13s;animation-delay:4s">❅</div>
+    <div class="snowflake" style="left:58%;animation-duration:15s;animation-delay:0.2s">✦</div>
+    <div class="snowflake" style="left:66%;animation-duration:8s;animation-delay:2s">❄</div>
+    <div class="snowflake" style="left:74%;animation-duration:12s;animation-delay:3.5s">❅</div>
+    <div class="snowflake" style="left:82%;animation-duration:17s;animation-delay:1s">✧</div>
+    <div class="snowflake" style="left:90%;animation-duration:11s;animation-delay:2.2s">❄</div>
+    <div class="snowflake" style="left:7%;animation-duration:13s;animation-delay:5s">❅</div>
+    <div class="snowflake" style="left:95%;animation-duration:10s;animation-delay:4.5s">✦</div>
+    <div class="snowflake" style="left:46%;animation-duration:18s;animation-delay:6s">❄</div>
+  </div>
+
+  <main class="festive-main">
+    <svg class="corner-deco tl" viewBox="0 0 64 64" aria-hidden="true">
+      <path fill="#1e5c3a" d="M8 52c8-4 12-14 10-24 2 10 10 18 20 20-10-2-18-10-20-20-2 10 2 20 10 24z"/>
+      <circle fill="#c41e3a" cx="22" cy="48" r="4"/><circle fill="#c41e3a" cx="36" cy="50" r="3.5"/>
+    </svg>
+    <svg class="corner-deco tr" viewBox="0 0 64 64" aria-hidden="true">
+      <path fill="#1e5c3a" d="M8 52c8-4 12-14 10-24 2 10 10 18 20 20-10-2-18-10-20-20-2 10 2 20 10 24z"/>
+      <circle fill="#c41e3a" cx="22" cy="48" r="4"/><circle fill="#c41e3a" cx="36" cy="50" r="3.5"/>
+    </svg>
+    <header class="title-row">
+      <svg width="36" height="36" viewBox="0 0 32 32" aria-hidden="true"><path fill="#228b22" d="M16 4l12 20H4z"/><rect fill="#5c3d1e" x="13" y="24" width="6" height="5" rx="1"/></svg>
+      <h1>Holiday Tetris</h1>
+      <svg width="36" height="36" viewBox="0 0 32 32" aria-hidden="true" class="candy-icon">
+        <path fill="none" stroke="#c41e3a" stroke-width="4" stroke-linecap="round" d="M10 6 Q22 14 12 26"/>
+        <path fill="none" stroke="#fdf6e8" stroke-width="1.5" stroke-dasharray="3 4" d="M10 6 Q22 14 12 26"/>
+      </svg>
+    </header>
+    <p class="subtitle"><span class="star">✦</span> Stack the gifts before Santa checks the list <span class="star">✦</span></p>
+    <p class="subtitle" style="font-size:0.78rem;margin-top:-0.35rem">Two boards: invite a guest on your LAN — run <code style="font-size:0.85em">node tetris-server.js</code> then connect both browsers to <code style="font-size:0.85em">ws://&lt;host-ip&gt;:8765</code> (WebSocket over TCP).</p>
+    <div class="wrap">
+      <div class="battle-row">
+        <div class="you-stack">
+          <div class="game-column">
+            <div class="fairy-lights" aria-hidden="true">
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="canvas-frame">
+              <canvas id="game" width="300" height="600" aria-label="Your Tetris playfield"></canvas>
+            </div>
+            <div class="gift-ribbon" aria-hidden="true"></div>
+          </div>
+          <aside class="stats-panel">
+            <h2>Score</h2>
+            <div class="stat" id="score">0</div>
+            <h2>Lines</h2>
+            <div class="stat" id="lines">0</div>
+            <h2>Level</h2>
+            <div class="stat" id="level">1</div>
+            <h2>Next</h2>
+            <canvas id="next" class="next-canvas" width="120" height="120" aria-hidden="true"></canvas>
+            <div class="help">
+              <kbd>←</kbd> <kbd>→</kbd> move<br />
+              <kbd>↓</kbd> soft drop<br />
+              <kbd>Space</kbd> rotate<br />
+              <kbd>P</kbd> pause<br />
+              <kbd>M</kbd> mute sound<br />
+              <span style="font-size:0.7rem;opacity:0.85">Big dino may chomp blocks on level&nbsp;up / big scores</span>
+            </div>
+          </aside>
+        </div>
+        <aside class="net-panel" aria-label="Network connection">
+          <h2>LAN duel</h2>
+          <p class="net-hint">Uses WebSocket (RFC 6455) over TCP/IP. The small Node relay pairs two tabs; each browser still runs its own game loop.</p>
+          <label for="wsUrl">Relay URL</label>
+          <input type="text" id="wsUrl" value="ws://127.0.0.1:8765" spellcheck="false" autocomplete="off" />
+          <button type="button" id="wsConnect">Connect</button>
+          <button type="button" id="wsDisconnect">Disconnect</button>
+          <p class="net-status" id="wsStatus">Offline — start relay, then connect both players.</p>
+        </aside>
+        <div class="opp-stack">
+          <div class="game-column">
+            <div class="fairy-lights" aria-hidden="true" style="opacity:0.45">
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="canvas-frame">
+              <canvas id="game-remote" width="300" height="600" aria-label="Opponent locked blocks"></canvas>
+            </div>
+            <div class="gift-ribbon" aria-hidden="true" style="opacity:0.5"></div>
+          </div>
+          <aside class="stats-panel stats-remote">
+            <h2>Guest score</h2>
+            <div class="stat" id="remote-score">—</div>
+            <h2>Guest lines</h2>
+            <div class="stat" id="remote-lines">—</div>
+            <h2>Guest level</h2>
+            <div class="stat" id="remote-level">—</div>
+            <div class="help" style="font-size:0.72rem;margin-top:0.75rem">Live stack only (no falling piece).</div>
+          </aside>
+        </div>
+      </div>
+      <section class="hall-of-fame" aria-label="High scores and history">
+        <div class="hof-inner">
+          <div class="hof-col">
+            <h2 class="hof-title">Hall of fame</h2>
+            <p class="hof-hint">After game over, enter your name and save your score. Local list stays on this browser; relay list is shared with everyone connected to the same Node relay.</p>
+            <div class="hof-save">
+              <input type="text" id="player-name" maxlength="24" placeholder="Your name" autocomplete="nickname" />
+              <button type="button" id="save-score" disabled>Save run</button>
+            </div>
+            <button type="button" class="hof-secondary" id="clear-local-scores">Clear local history</button>
+          </div>
+          <div class="hof-col">
+            <h3 class="hof-sub">This device</h3>
+            <ol id="score-list-local" class="score-list"></ol>
+          </div>
+          <div class="hof-col">
+            <h3 class="hof-sub">Relay session <span class="hof-live">(live)</span></h3>
+            <ol id="score-list-relay" class="score-list"></ol>
+          </div>
+        </div>
+      </section>
+    <svg class="corner-deco bl" viewBox="0 0 64 64" aria-hidden="true">
+      <path fill="#e8c547" d="M14 38l4-10 4 10 10 1-8 7 3 10-9-6-9 6 3-10-8-7z"/>
+      <circle fill="#c41e3a" cx="46" cy="50" r="5"/><circle fill="#1e5c3a" cx="52" cy="42" r="4"/>
+    </svg>
+    <svg class="corner-deco br" viewBox="0 0 64 64" aria-hidden="true">
+      <path fill="#e8c547" d="M14 38l4-10 4 10 10 1-8 7 3 10-9-6-9 6 3-10-8-7z"/>
+      <circle fill="#c41e3a" cx="46" cy="50" r="5"/><circle fill="#1e5c3a" cx="52" cy="42" r="4"/>
+    </svg>
+  </div>
+  </main>
+  <div class="dino-layer" id="dino-layer" aria-hidden="true">
+    <div class="dino-faller" id="dino-faller">
+      <svg viewBox="0 0 100 120" width="110" height="130" role="img" aria-label="Falling dinosaur">
+        <ellipse cx="20" cy="88" rx="20" ry="12" fill="#1b4332" transform="rotate(-25 20 88)" />
+        <ellipse cx="48" cy="80" rx="30" ry="24" fill="#2d6a4f" />
+        <path fill="#2d6a4f" d="M70 48 Q82 28 88 18 L96 24 Q88 42 78 68 Z" />
+        <ellipse cx="92" cy="22" rx="15" ry="11" fill="#2d6a4f" />
+        <circle cx="97" cy="20" r="2.5" fill="#fdf6e8" />
+        <circle cx="97.5" cy="20" r="1.2" fill="#0c1f16" />
+        <path fill="#40916c" d="M88 26 Q82 32 76 44 L82 46 Q88 34 92 28 Z" />
+        <ellipse cx="38" cy="100" rx="7" ry="12" fill="#1b4332" />
+        <ellipse cx="56" cy="100" rx="7" ry="12" fill="#1b4332" />
+        <ellipse cx="72" cy="94" rx="6" ry="10" fill="#1b4332" />
+        <path fill="none" stroke="#95d5b2" stroke-width="2" stroke-linecap="round" d="M78 52 Q70 40 62 38" opacity="0.7" />
+      </svg>
+    </div>
+  </div>
+  <div class="mega-dino-overlay" id="mega-dino-overlay" aria-hidden="true">
+    <div class="mega-dino-wrap">
+      <svg id="mega-dino-svg" width="320" height="280" viewBox="0 0 280 240" role="img" aria-label="Hungry bonus dinosaur">
+        <ellipse cx="52" cy="178" rx="38" ry="22" fill="#1b4332" transform="rotate(-18 52 178)" />
+        <ellipse cx="118" cy="168" rx="72" ry="52" fill="#2d6a4f" />
+        <path fill="#2d6a4f" d="M168 88 Q198 42 218 22 L238 38 Q210 78 188 128 Z" />
+        <g class="mega-dino-jaw-top">
+          <ellipse cx="232" cy="36" rx="44" ry="30" fill="#40916c" />
+          <path fill="#1b4332" d="M196 48 Q228 28 258 32 L252 52 Q220 58 196 48" />
+        </g>
+        <g class="mega-dino-jaw-bottom">
+          <path fill="#2d6a4f" d="M188 118 Q210 100 248 88 L262 108 Q220 128 178 138 Z" />
+          <path fill="#95d5b2" d="M200 112 L240 98 L252 108 L210 124 Z" opacity="0.5" />
+        </g>
+        <circle cx="248" cy="32" r="4" fill="#fdf6e8" />
+        <circle cx="249" cy="31" r="2" fill="#0c1f16" />
+        <ellipse cx="92" cy="198" rx="14" ry="22" fill="#1b4332" />
+        <ellipse cx="128" cy="200" rx="14" ry="22" fill="#1b4332" />
+        <ellipse cx="162" cy="192" rx="12" ry="20" fill="#1b4332" />
+      </svg>
+      <p class="mega-dino-msg" id="mega-dino-msg">Bonus chomp!</p>
+    </div>
+  </div>
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="overlay-title">
+    <div class="overlay-inner">
+      <h2 id="overlay-title">Paused</h2>
+      <p>Press <kbd>P</kbd> or click Continue.</p>
+      <button type="button" id="resume">Continue</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js" crossorigin="anonymous"></script>
+  <script>
+(function () {
+  const COLS = 10;
+  const ROWS = 20;
+  const BLOCK = 30;
+
+  /** @type {HTMLCanvasElement} */
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d");
+  const nextCanvas = document.getElementById("next");
+  const nextCtx = nextCanvas.getContext("2d");
+  const scoreEl = document.getElementById("score");
+  const linesEl = document.getElementById("lines");
+  const levelEl = document.getElementById("level");
+  const overlay = document.getElementById("overlay");
+  const resumeBtn = document.getElementById("resume");
+  const remoteCanvas = document.getElementById("game-remote");
+  const remoteCtx = remoteCanvas ? remoteCanvas.getContext("2d") : null;
+  const remoteScoreEl = document.getElementById("remote-score");
+  const remoteLinesEl = document.getElementById("remote-lines");
+  const remoteLevelEl = document.getElementById("remote-level");
+  const wsUrlInput = document.getElementById("wsUrl");
+  const wsConnectBtn = document.getElementById("wsConnect");
+  const wsDisconnectBtn = document.getElementById("wsDisconnect");
+  const wsStatusEl = document.getElementById("wsStatus");
+
+  /** @type {WebSocket | null} */
+  let netSocket = null;
+  let remoteBoard = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+
+  function encodeBoardGrid(b) {
+    let s = "";
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        const c = b[y][x];
+        s += c ? String(c)[0] : ".";
+      }
+    }
+    return s;
+  }
+
+  function decodeBoardGrid(str) {
+    if (!str || str.length !== ROWS * COLS) return null;
+    const out = [];
+    let i = 0;
+    for (let y = 0; y < ROWS; y++) {
+      const row = [];
+      for (let x = 0; x < COLS; x++) {
+        const ch = str[i++];
+        row.push(ch === "." ? null : ch);
+      }
+      out.push(row);
+    }
+    return out;
+  }
+
+  function setWsStatus(t) {
+    if (wsStatusEl) wsStatusEl.textContent = t;
+  }
+
+  function sendNetState() {
+    if (!netSocket || netSocket.readyState !== WebSocket.OPEN) return;
+    try {
+      netSocket.send(
+        JSON.stringify({
+          type: "state",
+          grid: encodeBoardGrid(board),
+          score,
+          level,
+          lines: linesTotal,
+        })
+      );
+    } catch (e) {}
+  }
+
+  function handleNetMessage(ev) {
+    let data;
+    try {
+      data = JSON.parse(ev.data);
+    } catch (e) {
+      return;
+    }
+    if (data.type === "state" && data.grid) {
+      const dec = decodeBoardGrid(data.grid);
+      if (dec) remoteBoard = dec;
+      if (remoteScoreEl && typeof data.score === "number") remoteScoreEl.textContent = String(data.score);
+      if (remoteLinesEl && typeof data.lines === "number") remoteLinesEl.textContent = String(data.lines);
+      if (remoteLevelEl && typeof data.level === "number") remoteLevelEl.textContent = String(data.level);
+      return;
+    }
+    if (data.type === "leaderboard" && Array.isArray(data.entries)) {
+      relayHallEntries = data.entries;
+      renderRelayHall();
+      return;
+    }
+    if (data.type === "waiting") setWsStatus("Connected — waiting for second player…");
+    if (data.type === "paired") setWsStatus("Paired — your locked stack syncs after each piece lands.");
+    if (data.type === "peer-left") setWsStatus("Peer disconnected.");
+  }
+
+  function connectNet() {
+    const url = (wsUrlInput && wsUrlInput.value.trim()) || "ws://127.0.0.1:8765";
+    if (netSocket && netSocket.readyState === WebSocket.OPEN) netSocket.close();
+    setWsStatus("Connecting…");
+    try {
+      const ws = new WebSocket(url);
+      netSocket = ws;
+      ws.onopen = () => setWsStatus("Socket open — waiting for relay / peer…");
+      ws.onmessage = handleNetMessage;
+      ws.onerror = () => setWsStatus("WebSocket error (is node tetris-server.js running?)");
+      ws.onclose = () => {
+        setWsStatus("Disconnected.");
+        netSocket = null;
+        relayHallEntries = [];
+        renderRelayHall();
+      };
+    } catch (e) {
+      setWsStatus("Could not open WebSocket.");
+    }
+  }
+
+  function disconnectNet() {
+    if (netSocket) {
+      netSocket.close();
+      netSocket = null;
+    }
+    setWsStatus("Offline — start relay, then connect both players.");
+    remoteBoard = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+    if (remoteScoreEl) remoteScoreEl.textContent = "—";
+    if (remoteLinesEl) remoteLinesEl.textContent = "—";
+    if (remoteLevelEl) remoteLevelEl.textContent = "—";
+    relayHallEntries = [];
+    renderRelayHall();
+  }
+
+  if (wsConnectBtn) wsConnectBtn.addEventListener("click", connectNet);
+  if (wsDisconnectBtn) wsDisconnectBtn.addEventListener("click", disconnectNet);
+
+  const LS_HALL = "holidayTetrisHallOfFame";
+  const LS_LAST_NAME = "holidayTetrisLastName";
+  const playerNameInput = document.getElementById("player-name");
+  const saveScoreBtn = document.getElementById("save-score");
+  const clearLocalScoresBtn = document.getElementById("clear-local-scores");
+  const scoreListLocal = document.getElementById("score-list-local");
+  const scoreListRelay = document.getElementById("score-list-relay");
+
+  let lastRunSnapshot = null;
+  let canSaveRun = false;
+  let relayHallEntries = [];
+
+  function sanitizeHallName(s) {
+    return String(s || "")
+      .trim()
+      .replace(/[\u0000-\u001f<>]/g, "")
+      .slice(0, 24) || "Player";
+  }
+
+  function loadLocalHall() {
+    try {
+      const raw = localStorage.getItem(LS_HALL);
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function writeLocalHall(rows) {
+    try {
+      localStorage.setItem(LS_HALL, JSON.stringify(rows.slice(0, 30)));
+    } catch (e) {}
+  }
+
+  function fmtHallWhen(at) {
+    if (!at) return "";
+    try {
+      return new Date(at).toLocaleString(undefined, {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch (e) {
+      return "";
+    }
+  }
+
+  function renderScoreListOl(ol, rows, emptyLabel) {
+    if (!ol) return;
+    ol.innerHTML = "";
+    if (!rows.length) {
+      const li = document.createElement("li");
+      li.style.listStyle = "none";
+      li.style.marginLeft = "-1rem";
+      li.style.color = "rgba(253,246,232,0.5)";
+      li.style.fontSize = "0.75rem";
+      li.textContent = emptyLabel;
+      ol.appendChild(li);
+      return;
+    }
+    rows.forEach((e, idx) => {
+      const li = document.createElement("li");
+      const p1 = document.createElement("span");
+      p1.className = "hi-score";
+      p1.textContent = "#" + (idx + 1) + " " + e.name + " — " + e.score;
+      const sm = document.createElement("small");
+      sm.style.opacity = "0.65";
+      const w = fmtHallWhen(e.at);
+      sm.textContent = " Lv" + e.level + " · " + e.lines + " lines" + (w ? " · " + w : "");
+      li.appendChild(p1);
+      li.appendChild(document.createTextNode(" "));
+      li.appendChild(sm);
+      ol.appendChild(li);
+    });
+  }
+
+  function renderLocalHall() {
+    const rows = loadLocalHall().sort((a, b) => b.score - a.score);
+    renderScoreListOl(scoreListLocal, rows, "No local saves yet.");
+  }
+
+  function renderRelayHall() {
+    const rows = relayHallEntries.slice().sort((a, b) => b.score - a.score);
+    renderScoreListOl(
+      scoreListRelay,
+      rows,
+      "No relay scores yet — connect to the same relay and save a run."
+    );
+  }
+
+  function onGameOverRecordRun() {
+    lastRunSnapshot = { score, lines: linesTotal, level };
+    canSaveRun = true;
+    if (saveScoreBtn) saveScoreBtn.disabled = false;
+  }
+
+  function onSaveRunClick() {
+    if (!canSaveRun || !lastRunSnapshot) return;
+    const name = sanitizeHallName(playerNameInput && playerNameInput.value);
+    try {
+      localStorage.setItem(LS_LAST_NAME, name);
+    } catch (e) {}
+    const entry = {
+      name,
+      score: lastRunSnapshot.score,
+      lines: lastRunSnapshot.lines,
+      level: lastRunSnapshot.level,
+      at: Date.now(),
+    };
+    const merged = loadLocalHall();
+    merged.push(entry);
+    merged.sort((a, b) => b.score - a.score);
+    writeLocalHall(merged);
+    renderLocalHall();
+    if (netSocket && netSocket.readyState === WebSocket.OPEN) {
+      try {
+        netSocket.send(
+          JSON.stringify({
+            type: "hiscore",
+            name,
+            score: entry.score,
+            lines: entry.lines,
+            level: entry.level,
+            at: entry.at,
+          })
+        );
+      } catch (e) {}
+    }
+    canSaveRun = false;
+    if (saveScoreBtn) saveScoreBtn.disabled = true;
+  }
+
+  function onClearLocalScores() {
+    try {
+      localStorage.removeItem(LS_HALL);
+    } catch (e) {}
+    renderLocalHall();
+  }
+
+  if (saveScoreBtn) saveScoreBtn.addEventListener("click", onSaveRunClick);
+  if (clearLocalScoresBtn) clearLocalScoresBtn.addEventListener("click", onClearLocalScores);
+
+  try {
+    const ln = localStorage.getItem(LS_LAST_NAME);
+    if (ln && playerNameInput) playerNameInput.value = ln;
+  } catch (e) {}
+  renderLocalHall();
+  renderRelayHall();
+
+  /**
+   * MIDI-style SFX + adaptive BGM (Tone.js). M toggles mute (including Transport).
+   */
+  const sfx = (function () {
+    let muted = false;
+    let gameOverPlayed = false;
+    let booted = false;
+    /** @type {Promise<void> | null} */
+    let booting = null;
+    let musicStarted = false;
+    let bgLoop = null;
+    let padSynth = null;
+    let padFilter = null;
+    let brassSynth = null;
+    let currentMusicLevel = 1;
+
+    function midiToNote(m) {
+      const n = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+      const o = Math.floor(m / 12) - 1;
+      return n[((m % 12) + 12) % 12] + o;
+    }
+
+    let leadSynth = null;
+    let drumSynth = null;
+    let noiseSynth = null;
+
+    function chordProgForLevel(lvl) {
+      const roots = [48, 50, 52, 53, 55];
+      const r = roots[(lvl - 1) % roots.length];
+      return [
+        [r, r + 4, r + 7],
+        [r + 5, r + 9, r + 12],
+        [r - 5, r - 1, r + 2],
+        [r + 2, r + 5, r + 9],
+      ].map((ch) => ch.map((m) => midiToNote(m)));
+    }
+
+    function rebuildBgLoop() {
+      if (typeof Tone === "undefined" || !padSynth) return;
+      if (bgLoop) {
+        bgLoop.stop();
+        bgLoop.dispose();
+        bgLoop = null;
+      }
+      const chords = chordProgForLevel(currentMusicLevel);
+      let step = 0;
+      bgLoop = new Tone.Loop((time) => {
+        const ch = chords[step % chords.length];
+        padSynth.triggerAttackRelease(ch, "2n", time, 0.12);
+        step++;
+      }, "2n");
+      bgLoop.start(0);
+    }
+
+    function boot() {
+      if (typeof Tone === "undefined") return Promise.resolve();
+      if (booted) return Promise.resolve();
+      if (booting) return booting;
+      booting = Tone.start()
+        .then(() => {
+          Tone.context.lookAhead = 0.06;
+          leadSynth = new Tone.Synth({
+            oscillator: { type: "square" },
+            envelope: { attack: 0.002, decay: 0.12, sustain: 0.05, release: 0.08 },
+          }).toDestination();
+          leadSynth.volume.value = -10;
+
+          drumSynth = new Tone.MembraneSynth({
+            pitchDecay: 0.008,
+            octaves: 4,
+            envelope: { attack: 0.001, decay: 0.22, sustain: 0, release: 0.12 },
+          }).toDestination();
+          drumSynth.volume.value = -6;
+
+          noiseSynth = new Tone.NoiseSynth({
+            noise: { type: "pink" },
+            envelope: { attack: 0.001, decay: 0.12, sustain: 0, release: 0.05 },
+          }).toDestination();
+          noiseSynth.volume.value = -18;
+
+          padFilter = new Tone.Filter(900 + currentMusicLevel * 80, "lowpass");
+          padSynth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "triangle" },
+            envelope: { attack: 0.08, decay: 0.35, sustain: 0.35, release: 0.9 },
+          });
+          padSynth.volume.value = -27;
+          padSynth.connect(padFilter);
+          padFilter.toDestination();
+
+          brassSynth = new Tone.Synth({
+            oscillator: { type: "sawtooth" },
+            envelope: { attack: 0.04, decay: 0.25, sustain: 0.1, release: 0.4 },
+          }).toDestination();
+          brassSynth.volume.value = -14;
+
+          booted = true;
+        })
+        .catch(() => {});
+      return booting;
+    }
+
+    function startMusicIfNeeded() {
+      if (musicStarted || typeof Tone === "undefined" || !booted || !padSynth) return;
+      musicStarted = true;
+      Tone.Transport.bpm.value = 78 + currentMusicLevel * 3;
+      rebuildBgLoop();
+      Tone.Transport.start();
+    }
+
+    function stopMusic() {
+      if (typeof Tone === "undefined") return;
+      Tone.Transport.stop();
+      if (bgLoop) {
+        bgLoop.stop();
+        bgLoop.dispose();
+        bgLoop = null;
+      }
+      musicStarted = false;
+    }
+
+    function withAudio(fn) {
+      if (muted) return;
+      void boot().then(() => {
+        if (muted || !booted || !leadSynth) return;
+        startMusicIfNeeded();
+        fn();
+      });
+    }
+
+    return {
+      toggleMute() {
+        muted = !muted;
+        if (typeof Tone !== "undefined" && Tone.Destination) {
+          Tone.Destination.mute = muted;
+        }
+        return muted;
+      },
+      warmup() {
+        void boot().then(() => {
+          if (!muted && booted) startMusicIfNeeded();
+        });
+      },
+      /** BGM chord roots / filter follow level. */
+      syncMusicLevel(lvl) {
+        currentMusicLevel = Math.max(1, lvl);
+        void boot().then(() => {
+          if (!booted || !padSynth || !padFilter) return;
+          padFilter.frequency.value = 820 + currentMusicLevel * 95;
+          Tone.Transport.bpm.value = 76 + currentMusicLevel * 4;
+          if (musicStarted) rebuildBgLoop();
+        });
+      },
+      pauseMusic() {
+        if (typeof Tone !== "undefined" && Tone.Transport.state === "started") {
+          Tone.Transport.pause();
+        }
+      },
+      resumeMusic() {
+        if (typeof Tone !== "undefined" && musicStarted && !gameOverPlayed) {
+          Tone.Transport.start();
+        }
+      },
+      move(dir) {
+        withAudio(() => {
+          const m = dir < 0 ? 56 : 59;
+          leadSynth.triggerAttackRelease(midiToNote(m), "32n");
+        });
+      },
+      rotate() {
+        withAudio(() => {
+          const t = Tone.now();
+          leadSynth.triggerAttackRelease(midiToNote(64), "32n", t);
+          leadSynth.triggerAttackRelease(midiToNote(71), "32n", t + 0.04);
+        });
+      },
+      softDrop() {
+        withAudio(() => {
+          drumSynth.triggerAttackRelease(midiToNote(36), "32n");
+        });
+      },
+      lock() {
+        withAudio(() => {
+          const t = Tone.now();
+          drumSynth.triggerAttackRelease("A0", "16n", t);
+          noiseSynth.triggerAttackRelease("32n", t + 0.01);
+        });
+      },
+      lineClear(n) {
+        withAudio(() => {
+          const count = Math.min(4, Math.max(1, n));
+          const melody = [67, 71, 74, 79];
+          let t = Tone.now();
+          for (let i = 0; i < count; i++) {
+            leadSynth.triggerAttackRelease(midiToNote(melody[i]), "16n", t);
+            t += 0.082;
+          }
+        });
+      },
+      /** Short stings when crossing score “approach” thresholds (highest crossed only). */
+      scoreApproach(prev, next) {
+        if (muted || prev === next) return;
+        const tiers = [
+          [100, [60, 64, 67]],
+          [180, [55, 59, 62]],
+          [200, [64, 67, 71]],
+          [250, [62, 66, 69]],
+          [280, [67, 71, 74]],
+          [350, [59, 64, 68]],
+          [400, [65, 69, 72]],
+          [500, [60, 64, 67, 72]],
+          [750, [57, 62, 66, 71]],
+          [900, [64, 68, 71, 76]],
+        ];
+        let chosen = null;
+        for (const [thr, notes] of tiers) {
+          if (prev < thr && next >= thr) chosen = notes;
+        }
+        if (!chosen) return;
+        void boot().then(() => {
+          if (muted || !booted || !leadSynth) return;
+          startMusicIfNeeded();
+          let t = Tone.now();
+          for (const note of chosen) {
+            leadSynth.triggerAttackRelease(midiToNote(note), "24n", t, 0.55);
+            t += 0.07;
+          }
+        });
+      },
+      levelUpFanfare(newLevel) {
+        withAudio(() => {
+          if (!brassSynth) return;
+          const t = Tone.now();
+          const shift = Math.min(5, Math.max(0, newLevel - 1));
+          const seq = [60, 64, 67, 72, 76].map((m) => m + shift);
+          let tt = t;
+          for (const m of seq) {
+            brassSynth.triggerAttackRelease(midiToNote(Math.min(88, m)), "16n", tt, 0.35);
+            tt += 0.09;
+          }
+        });
+      },
+      megaDinoApproach() {
+        withAudio(() => {
+          if (!brassSynth) return;
+          const t = Tone.now();
+          brassSynth.triggerAttackRelease(midiToNote(41), "4n", t, 0.25);
+          brassSynth.triggerAttackRelease(midiToNote(48), "8n", t + 0.35, 0.3);
+        });
+      },
+      megaDinoChomp() {
+        withAudio(() => {
+          const t = Tone.now();
+          drumSynth.triggerAttackRelease("C1", "8n", t);
+          noiseSynth.triggerAttackRelease("16n", t + 0.02);
+          leadSynth.triggerAttackRelease(midiToNote(50), "32n", t + 0.05, 0.5);
+        });
+      },
+      gameOver() {
+        if (muted || gameOverPlayed) return;
+        gameOverPlayed = true;
+        stopMusic();
+        withAudio(() => {
+          const t = Tone.now();
+          leadSynth.triggerAttackRelease(midiToNote(72), "8n", t, 0.85);
+          leadSynth.triggerAttackRelease(midiToNote(64), "8n", t + 0.2, 0.8);
+          leadSynth.triggerAttackRelease(midiToNote(55), "4n", t + 0.42, 0.75);
+          noiseSynth.triggerAttackRelease("16n", t + 0.55);
+        });
+      },
+      pause() {
+        pauseMusic();
+        withAudio(() => {
+          const t0 = Tone.now();
+          leadSynth.triggerAttackRelease(midiToNote(65), "16n", t0, 0.7);
+          leadSynth.triggerAttackRelease(midiToNote(58), "16n", t0 + 0.06, 0.55);
+        });
+      },
+      resume() {
+        resumeMusic();
+        withAudio(() => {
+          const t0 = Tone.now();
+          leadSynth.triggerAttackRelease(midiToNote(58), "16n", t0, 0.55);
+          leadSynth.triggerAttackRelease(midiToNote(65), "16n", t0 + 0.06, 0.7);
+        });
+      },
+    };
+  })();
+
+  const COLORS = {
+    I: "#7dd3fc",
+    O: "#fde047",
+    T: "#d8b4fe",
+    S: "#4ade80",
+    Z: "#fb7185",
+    J: "#93c5fd",
+    L: "#fdba74",
+  };
+
+  const SHAPES = {
+    I: [[1, 1, 1, 1]],
+    O: [
+      [1, 1],
+      [1, 1],
+    ],
+    T: [
+      [0, 1, 0],
+      [1, 1, 1],
+    ],
+    S: [
+      [0, 1, 1],
+      [1, 1, 0],
+    ],
+    Z: [
+      [1, 1, 0],
+      [0, 1, 1],
+    ],
+    J: [
+      [1, 0, 0],
+      [1, 1, 1],
+    ],
+    L: [
+      [0, 0, 1],
+      [1, 1, 1],
+    ],
+  };
+
+  const TYPES = Object.keys(SHAPES);
+
+  /** @returns {string[][]} */
+  function cloneMatrix(m) {
+    return m.map((row) => row.slice());
+  }
+
+  /** @param {number[][]} m */
+  function rotateCW(m) {
+    const rows = m.length;
+    const cols = m[0].length;
+    const out = Array.from({ length: cols }, () => Array(rows).fill(0));
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        out[x][rows - 1 - y] = m[y][x];
+      }
+    }
+    return out;
+  }
+
+  function bagRandomizer() {
+    let bag = [];
+    return function next() {
+      if (!bag.length) {
+        bag = TYPES.slice();
+        for (let i = bag.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [bag[i], bag[j]] = [bag[j], bag[i]];
+        }
+      }
+      return bag.pop();
+    };
+  }
+
+  const nextType = bagRandomizer();
+
+  /** @type {(null | string)[][]} */
+  const board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+
+  let nextPieceType = nextType();
+  let piece = spawnPiece();
+  let score = 0;
+  let linesTotal = 0;
+  let level = 1;
+  let dropMs = 800;
+  let dropAcc = 0;
+  let paused = false;
+  let gameOver = false;
+  let lastTs = 0;
+
+  const DINO_SCORE = 300;
+  let dinoCelebrationShown = false;
+
+  function maybeCelebrateDino() {
+    if (dinoCelebrationShown || score < DINO_SCORE || dinoBusy) return;
+    dinoCelebrationShown = true;
+    const faller = document.getElementById("dino-faller");
+    const layer = document.getElementById("dino-layer");
+    if (!faller) return;
+    faller.classList.remove("go");
+    void faller.offsetWidth;
+    faller.classList.add("go");
+    if (layer) layer.setAttribute("aria-hidden", "false");
+    window.setTimeout(() => {
+      if (layer) layer.setAttribute("aria-hidden", "true");
+    }, 5400);
+  }
+
+  let dinoBusy = false;
+  let megaCooldownUntil = 0;
+  const megaScoreHits = new Set();
+
+  function applyColumnGravity() {
+    for (let x = 0; x < COLS; x++) {
+      const stack = [];
+      for (let y = ROWS - 1; y >= 0; y--) {
+        if (board[y][x] !== null) stack.push(board[y][x]);
+      }
+      for (let y = ROWS - 1; y >= 0; y--) {
+        const idx = ROWS - 1 - y;
+        board[y][x] = idx < stack.length ? stack[idx] : null;
+      }
+    }
+  }
+
+  /** Remove a bite of stacked blocks; returns how many cells were cleared. */
+  function dinoBiteStackCells() {
+    const W = 4;
+    const H = 3;
+    let removed = 0;
+    let cx = 0;
+    let done = false;
+    for (let attempt = 0; attempt < 16 && !done; attempt++) {
+      cx = Math.floor(Math.random() * (COLS - W + 1));
+      for (let cy = ROWS - H; cy >= 0; cy--) {
+        let hits = 0;
+        for (let yy = cy; yy < cy + H; yy++) {
+          for (let xx = cx; xx < cx + W; xx++) {
+            if (board[yy][xx]) hits++;
+          }
+        }
+        if (hits >= 2) {
+          for (let yy = cy; yy < cy + H; yy++) {
+            for (let xx = cx; xx < cx + W; xx++) {
+              if (board[yy][xx]) {
+                board[yy][xx] = null;
+                removed++;
+              }
+            }
+          }
+          done = true;
+          break;
+        }
+      }
+    }
+    return removed;
+  }
+
+  function checkMegaScoreBonus(prev, next) {
+    for (const m of [600, 1200]) {
+      if (prev < m && next >= m && !megaScoreHits.has(m)) {
+        megaScoreHits.add(m);
+        window.setTimeout(() => queueMegaDinoBonus("score"), 520);
+      }
+    }
+  }
+
+  function queueMegaDinoBonus(reason) {
+    if (dinoBusy || gameOver) return;
+    if (Date.now() < megaCooldownUntil) return;
+    megaCooldownUntil = Date.now() + 11000;
+    dinoBusy = true;
+    const mega = document.getElementById("mega-dino-overlay");
+    const msg = document.getElementById("mega-dino-msg");
+    if (msg) {
+      msg.textContent = reason === "level" ? "Level up feast!" : "Score bonus chomp!";
+    }
+    if (mega) {
+      mega.classList.add("show");
+      mega.setAttribute("aria-hidden", "false");
+    }
+    sfx.megaDinoApproach();
+    window.setTimeout(() => {
+      sfx.megaDinoChomp();
+      const eaten = dinoBiteStackCells();
+      applyColumnGravity();
+      const beforeChompScore = score;
+      clearLines({ fromDinoBite: true });
+      score += 28 + eaten * 9;
+      scoreEl.textContent = String(score);
+      refreshDropSpeed();
+      sfx.scoreApproach(beforeChompScore, score);
+      checkMegaScoreBonus(beforeChompScore, score);
+      sendNetState();
+    }, 1750);
+    window.setTimeout(() => {
+      if (mega) {
+        mega.classList.remove("show");
+        mega.setAttribute("aria-hidden", "true");
+      }
+      dinoBusy = false;
+      lastTs = 0;
+    }, 2900);
+  }
+
+  const SCORE_FOR_FASTER_DROP = 200;
+  /** Extra speed (shorter interval) once score reaches threshold — “a little” faster */
+  const DROP_BONUS_MS = 55;
+
+  function refreshDropSpeed() {
+    let ms = Math.max(120, 800 - (level - 1) * 65);
+    if (score >= SCORE_FOR_FASTER_DROP) {
+      ms = Math.max(120, ms - DROP_BONUS_MS);
+    }
+    dropMs = ms;
+  }
+
+  refreshDropSpeed();
+  sfx.syncMusicLevel(1);
+
+  function spawnPiece() {
+    const type = nextPieceType;
+    nextPieceType = nextType();
+    const base = SHAPES[type].map((row) => row.map((c) => (c ? type : 0)));
+    return {
+      type,
+      matrix: cloneMatrix(base),
+      x: Math.floor(COLS / 2) - Math.ceil(base[0].length / 2),
+      y: 0,
+    };
+  }
+
+  function collides(px, py, mat) {
+    for (let y = 0; y < mat.length; y++) {
+      for (let x = 0; x < mat[y].length; x++) {
+        if (!mat[y][x]) continue;
+        const bx = px + x;
+        const by = py + y;
+        if (bx < 0 || bx >= COLS || by >= ROWS) return true;
+        if (by >= 0 && board[by][bx]) return true;
+      }
+    }
+    return false;
+  }
+
+  function mergePiece() {
+    const { x, y, matrix } = piece;
+    for (let yy = 0; yy < matrix.length; yy++) {
+      for (let xx = 0; xx < matrix[yy].length; xx++) {
+        const cell = matrix[yy][xx];
+        if (!cell) continue;
+        const by = y + yy;
+        const bx = x + xx;
+        if (by < 0) {
+          gameOver = true;
+          return;
+        }
+        board[by][bx] = cell;
+      }
+    }
+  }
+
+  /** @param {{ fromDinoBite?: boolean }} [opts] */
+  function clearLines(opts) {
+    const fromDinoBite = opts && opts.fromDinoBite;
+    const prevLevel = level;
+    const prevScore = score;
+    let cleared = 0;
+    for (let y = ROWS - 1; y >= 0; y--) {
+      if (board[y].every((c) => c !== null)) {
+        board.splice(y, 1);
+        board.unshift(Array(COLS).fill(null));
+        cleared++;
+        y++;
+      }
+    }
+    if (cleared) {
+      const points = [0, 100, 300, 500, 800];
+      score += (points[cleared] || 800) * level;
+      linesTotal += cleared;
+      level = 1 + Math.floor(linesTotal / 10);
+      refreshDropSpeed();
+      scoreEl.textContent = String(score);
+      linesEl.textContent = String(linesTotal);
+      levelEl.textContent = String(level);
+      sfx.syncMusicLevel(level);
+      sfx.scoreApproach(prevScore, score);
+      if (level > prevLevel) {
+        sfx.levelUpFanfare(level);
+        if (!fromDinoBite) {
+          window.setTimeout(() => queueMegaDinoBonus("level"), 480);
+        }
+      }
+      maybeCelebrateDino();
+      checkMegaScoreBonus(prevScore, score);
+    }
+    return cleared;
+  }
+
+  function tryMove(dx, dy) {
+    if (gameOver || paused || dinoBusy) return false;
+    const nx = piece.x + dx;
+    const ny = piece.y + dy;
+    if (!collides(nx, ny, piece.matrix)) {
+      piece.x = nx;
+      piece.y = ny;
+      return true;
+    }
+    return false;
+  }
+
+  function tryRotate() {
+    if (gameOver || paused || dinoBusy) return false;
+    const rotated = rotateCW(
+      piece.matrix.map((row) => row.map((c) => (c ? 1 : 0)))
+    ).map((row) => row.map((c) => (c ? piece.type : 0)));
+    const kicks = [0, -1, 1, -2, 2];
+    for (const k of kicks) {
+      if (!collides(piece.x + k, piece.y, rotated)) {
+        piece.x += k;
+        piece.matrix = rotated;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function lockPiece() {
+    mergePiece();
+    const cleared = clearLines();
+    if (cleared > 0) sfx.lineClear(cleared);
+    else if (!gameOver) sfx.lock();
+    piece = spawnPiece();
+    if (collides(piece.x, piece.y, piece.matrix)) gameOver = true;
+    if (gameOver) {
+      sfx.gameOver();
+      onGameOverRecordRun();
+    }
+    sendNetState();
+  }
+
+  /** Automatic gravity — silent between steps. */
+  function stepGravity() {
+    if (gameOver || paused || dinoBusy) return;
+    if (!tryMove(0, 1)) lockPiece();
+  }
+
+  /** Player soft drop (arrow down) — tick sound when the piece moves. */
+  function softDropStep() {
+    if (gameOver || paused || dinoBusy) return;
+    if (!tryMove(0, 1)) lockPiece();
+    else sfx.softDrop();
+  }
+
+  function drawBlock(context, bx, by, type, alpha = 1) {
+    const px = bx * BLOCK;
+    const py = by * BLOCK;
+    const color = COLORS[type] || "#888";
+    context.globalAlpha = alpha;
+    context.fillStyle = color;
+    context.fillRect(px + 0.5, py + 0.5, BLOCK - 1, BLOCK - 1);
+    context.strokeStyle = "rgba(253, 246, 232, 0.28)";
+    context.lineWidth = 1;
+    context.strokeRect(px + 0.5, py + 0.5, BLOCK - 1, BLOCK - 1);
+    context.globalAlpha = 1;
+  }
+
+  function drawBoard() {
+    ctx.fillStyle = "#071210";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        const t = board[y][x];
+        if (t) drawBlock(ctx, x, y, t);
+      }
+    }
+    ctx.strokeStyle = "rgba(232, 197, 71, 0.08)";
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= COLS; x++) {
+      ctx.beginPath();
+      ctx.moveTo(x * BLOCK, 0);
+      ctx.lineTo(x * BLOCK, ROWS * BLOCK);
+      ctx.stroke();
+    }
+    for (let y = 0; y <= ROWS; y++) {
+      ctx.beginPath();
+      ctx.moveTo(0, y * BLOCK);
+      ctx.lineTo(COLS * BLOCK, y * BLOCK);
+      ctx.stroke();
+    }
+  }
+
+  function drawRemoteBoard() {
+    if (!remoteCtx) return;
+    remoteCtx.fillStyle = "#071210";
+    remoteCtx.fillRect(0, 0, remoteCanvas.width, remoteCanvas.height);
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        const t = remoteBoard[y][x];
+        if (t) drawBlock(remoteCtx, x, y, t, 0.9);
+      }
+    }
+    remoteCtx.strokeStyle = "rgba(232, 197, 71, 0.08)";
+    remoteCtx.lineWidth = 1;
+    for (let x = 0; x <= COLS; x++) {
+      remoteCtx.beginPath();
+      remoteCtx.moveTo(x * BLOCK, 0);
+      remoteCtx.lineTo(x * BLOCK, ROWS * BLOCK);
+      remoteCtx.stroke();
+    }
+    for (let y = 0; y <= ROWS; y++) {
+      remoteCtx.beginPath();
+      remoteCtx.moveTo(0, y * BLOCK);
+      remoteCtx.lineTo(COLS * BLOCK, y * BLOCK);
+      remoteCtx.stroke();
+    }
+  }
+
+  function drawPieceGhost() {
+    if (gameOver || paused) return;
+    let gy = piece.y;
+    while (!collides(piece.x, gy + 1, piece.matrix)) gy++;
+    for (let y = 0; y < piece.matrix.length; y++) {
+      for (let x = 0; x < piece.matrix[y].length; x++) {
+        const c = piece.matrix[y][x];
+        if (c) drawBlock(ctx, piece.x + x, gy + y, piece.type, 0.22);
+      }
+    }
+  }
+
+  function drawActivePiece() {
+    if (gameOver) return;
+    for (let y = 0; y < piece.matrix.length; y++) {
+      for (let x = 0; x < piece.matrix[y].length; x++) {
+        const c = piece.matrix[y][x];
+        if (c) drawBlock(ctx, piece.x + x, piece.y + y, piece.type, 1);
+      }
+    }
+  }
+
+  function drawNext() {
+    const pad = 15;
+    const cell = 24;
+    nextCtx.fillStyle = "#081510";
+    nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
+    const base = SHAPES[nextPieceType];
+    const mw = base[0].length;
+    const mh = base.length;
+    const ox = pad + (nextCanvas.width - 2 * pad - mw * cell) / 2;
+    const oy = pad + (nextCanvas.height - 2 * pad - mh * cell) / 2;
+    const color = COLORS[nextPieceType];
+    for (let y = 0; y < mh; y++) {
+      for (let x = 0; x < mw; x++) {
+        if (!base[y][x]) continue;
+        const px = ox + x * cell;
+        const py = oy + y * cell;
+        nextCtx.fillStyle = color;
+        nextCtx.fillRect(px, py, cell - 1, cell - 1);
+        nextCtx.strokeStyle = "rgba(232, 197, 71, 0.25)";
+        nextCtx.strokeRect(px + 0.5, py + 0.5, cell - 2, cell - 2);
+      }
+    }
+  }
+
+  function drawGameOver() {
+    if (!gameOver) return;
+    ctx.fillStyle = "rgba(8, 18, 12, 0.72)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#fdf6e8";
+    ctx.font = "bold 22px Quicksand, Segoe UI, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Game over", canvas.width / 2, canvas.height / 2 - 10);
+    ctx.font = "14px Quicksand, Segoe UI, system-ui, sans-serif";
+    ctx.fillStyle = "rgba(232, 197, 71, 0.85)";
+    ctx.fillText("Refresh page to play again", canvas.width / 2, canvas.height / 2 + 18);
+    ctx.textAlign = "left";
+  }
+
+  function frame(ts) {
+    if (!lastTs) lastTs = ts;
+    const dt = ts - lastTs;
+    lastTs = ts;
+
+    if (!paused && !gameOver && !dinoBusy) {
+      dropAcc += dt;
+      while (dropAcc >= dropMs) {
+        dropAcc -= dropMs;
+        stepGravity();
+      }
+    }
+
+    drawBoard();
+    drawPieceGhost();
+    drawActivePiece();
+    drawGameOver();
+    drawRemoteBoard();
+    drawNext();
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener("keydown", (e) => {
+    sfx.warmup();
+    if (e.code === "Space") {
+      e.preventDefault();
+      if (tryRotate()) sfx.rotate();
+      return;
+    }
+    if (e.code === "ArrowLeft") {
+      e.preventDefault();
+      if (tryMove(-1, 0)) sfx.move(-1);
+      return;
+    }
+    if (e.code === "ArrowRight") {
+      e.preventDefault();
+      if (tryMove(1, 0)) sfx.move(1);
+      return;
+    }
+    if (e.code === "ArrowDown") {
+      e.preventDefault();
+      if (!paused && !gameOver && !dinoBusy) {
+        const prevS = score;
+        softDropStep();
+        score += 1;
+        scoreEl.textContent = String(score);
+        refreshDropSpeed();
+        sfx.scoreApproach(prevS, score);
+        checkMegaScoreBonus(prevS, score);
+        maybeCelebrateDino();
+      }
+      return;
+    }
+    if (e.code === "KeyP") {
+      e.preventDefault();
+      if (gameOver || dinoBusy) return;
+      paused = !paused;
+      overlay.classList.toggle("visible", paused);
+      document.getElementById("overlay-title").textContent = paused ? "Paused" : "";
+      lastTs = 0;
+      if (paused) sfx.pause();
+      else sfx.resume();
+      return;
+    }
+    if (e.code === "KeyM") {
+      e.preventDefault();
+      sfx.toggleMute();
+      return;
+    }
+  });
+
+  resumeBtn.addEventListener("click", () => {
+    sfx.warmup();
+    paused = false;
+    overlay.classList.remove("visible");
+    lastTs = 0;
+    sfx.resume();
+  });
+
+  drawNext();
+  requestAnimationFrame(frame);
+})();
+  </script>
+</body>
+</html>

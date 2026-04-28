@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tetris</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="bgGrid" aria-hidden="true"></div>
+    <main class="wrap">
+      <header class="top">
+        <div>
+          <h1 class="title">Tetris</h1>
+          <p class="sub">
+            Arrow keys: move • Down: soft drop • Space: rotate • P: pause • R:
+            restart
+          </p>
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <div class="label">Score</div>
+            <div id="score" class="value">0</div>
+          </div>
+          <div class="stat">
+            <div class="label">High</div>
+            <div id="highScore" class="value">0</div>
+          </div>
+          <div class="stat">
+            <div class="label">Lines</div>
+            <div id="lines" class="value">0</div>
+          </div>
+          <div class="stat">
+            <div class="label">Level</div>
+            <div id="level" class="value">1</div>
+          </div>
+          <div class="stat">
+            <div class="label">Time</div>
+            <div id="time" class="value">0:00</div>
+          </div>
+        </div>
+      </header>
+
+      <section class="grid">
+        <div class="panel" id="panel">
+          <canvas id="game" width="300" height="600" aria-label="Tetris board"></canvas>
+          <canvas id="fx" width="300" height="600" class="fx" aria-hidden="true"></canvas>
+          <div id="overlay" class="overlay">
+            <div class="overlayCard">
+              <div id="overlayTitle" class="overlayTitle">Paused</div>
+              <div id="overlayHint" class="overlayHint">Press P to resume</div>
+            </div>
+          </div>
+          <div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>
+        </div>
+        <aside class="side">
+          <div class="card split">
+            <div class="cardCol">
+              <div class="cardTitle">Next</div>
+              <canvas id="next" width="120" height="120" aria-label="Next piece"></canvas>
+            </div>
+            <div class="cardCol meta">
+              <div class="miniStat">
+                <div class="miniLabel">Pieces</div>
+                <div id="pieces" class="miniValue">0</div>
+              </div>
+              <div class="miniStat">
+                <div class="miniLabel">Speed</div>
+                <div id="speed" class="miniValue">—</div>
+              </div>
+              <div class="miniHint">Clear lines to level up.</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="cardTitle">Controls</div>
+            <ul class="controls">
+              <li><kbd>←</kbd><kbd>→</kbd> Move</li>
+              <li><kbd>↓</kbd> Soft drop</li>
+              <li><kbd>Space</kbd> Rotate</li>
+              <li><kbd>P</kbd> Pause</li>
+              <li><kbd>R</kbd> Restart</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="cardTitle">Goals</div>
+            <ul class="goals">
+              <li>Hit score milestones for effects</li>
+              <li>Clear 4 lines (Tetris) for big points</li>
+              <li>Survive the speed ramp</li>
+            </ul>
+          </div>
+        </aside>
+      </section>
+      <footer class="foot">
+        Tip: click the game once, then use the keyboard.
+      </footer>
+    </main>
+    <script src="./tetris.js"></script>
+  </body>
+</html>

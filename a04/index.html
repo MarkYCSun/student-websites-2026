@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>DINO-TRIX: Jurassic Chaos Edition</title>
+  <meta name="description" content="DINO-TRIX: Jurassic Chaos Edition — a prehistoric jungle Tetris game with T-Rex power-ups, two-player mayhem, and epic dino chaos!">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============================================================
+     BACKGROUND CANVAS — Parallax Jungle, Volcanoes, Fireflies
+     ============================================================ -->
+<canvas id="bgCanvas"></canvas>
+
+<!-- ============================================================
+     START SCREEN
+     ============================================================ -->
+<div id="startScreen" class="screen active">
+  <div class="title">🦖 DINO-TRIX 🦕</div>
+  <div class="subtitle">Jurassic Chaos Edition</div>
+  <div class="menu-buttons">
+    <button id="btnSinglePlayer" class="btn btn-primary">🎮 Single Player</button>
+    <button id="btnResumeGame" class="btn btn-success" style="display:none;">
+      ▶ Resume Saved Game
+    </button>
+    <div id="savedGameInfo" class="saved-game-info" style="display:none;"></div>
+    <button id="btnTwoPlayer" class="btn btn-primary">👥 Two Player Mayhem</button>
+    <button id="btnHighScores" class="btn btn-secondary">🏆 Hall of Fossils</button>
+    <button id="btnSettings" class="btn btn-secondary">⚙️ Settings</button>
+  </div>
+  <div id="settingsPanel" class="settings-panel" style="display:none;">
+    <div class="slider-row">
+      <label>MUSIC</label>
+      <input type="range" id="musicVolume" min="0" max="100" value="50">
+    </div>
+    <div class="slider-row">
+      <label>SFX</label>
+      <input type="range" id="sfxVolume" min="0" max="100" value="70">
+    </div>
+    <button id="btnSettingsBack" class="btn btn-secondary" style="font-size:0.4rem;">BACK</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     GAME SCREEN
+     ============================================================ -->
+<div id="gameScreen" class="screen"></div>
+
+<!-- ============================================================
+     PAUSE OVERLAY
+     ============================================================ -->
+<div id="pauseOverlay">
+  <div class="pause-title">⏸ PAUSED</div>
+  <div class="dino-fact">
+    <span class="fact-label">🦕 DINO FACT</span>
+    <span id="dinoFactText">Loading prehistoric wisdom...</span>
+  </div>
+  <canvas id="pauseDinoCanvas" width="120" height="100" style="margin-bottom:1em;"></canvas>
+  <div class="menu-buttons">
+    <button id="btnResume" class="btn btn-primary">▶ RESUME</button>
+    <button id="btnSaveQuit" class="btn btn-success">💾 SAVE & EXIT</button>
+    <button id="btnQuit" class="btn btn-danger">✖ QUIT (no save)</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     GAME OVER SCREEN
+     ============================================================ -->
+<div id="gameOverScreen" class="screen">
+  <div class="go-title">💀 EXTINCTION 💀</div>
+  <div id="goScore" class="go-score">0</div>
+  <div id="goLevel" class="go-level">Level 1</div>
+  <div id="goP2" style="display:none; margin-bottom:1em;">
+    <div style="font-family:'Press Start 2P',monospace;font-size:0.7rem;color:#ff66aa;margin-bottom:4px;">Player 2</div>
+    <div id="goScoreP2" class="go-score" style="font-size:0.9rem;">0</div>
+  </div>
+  <div id="goWinner" style="font-family:'Press Start 2P',monospace;font-size:0.8rem;color:#ffd700;text-shadow:0 0 10px #ff8800;margin-bottom:1em;display:none;"></div>
+  <div class="menu-buttons">
+    <button id="btnSaveScore" class="btn btn-primary">🦴 Save to Hall of Fossils</button>
+    <button id="btnPlayAgain" class="btn btn-secondary">🔄 Play Again</button>
+    <button id="btnGoMenu" class="btn btn-secondary">🏠 Menu</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     HALL OF FOSSILS (HIGH SCORES)
+     ============================================================ -->
+<div id="hallScreen" class="screen">
+  <div class="hall-title">🏆 HALL OF FOSSILS 🏆</div>
+  <div id="nameInputArea" class="name-input-area" style="display:none;">
+    <input type="text" id="playerNameInput" placeholder="Enter your dino name..." maxlength="20">
+    <button id="btnConfirmName" class="btn btn-primary" style="font-size:0.4rem;">FOSSILIZE MY LEGACY</button>
+  </div>
+  <table class="score-table">
+    <thead><tr><th>#</th><th>FOSSIL NAME</th><th>SCORE</th><th>LVL</th></tr></thead>
+    <tbody id="scoreTableBody"></tbody>
+  </table>
+  <div class="menu-buttons">
+    <button id="btnShareScore" class="btn btn-secondary" style="font-size:0.4rem;">📋 Share Score</button>
+    <button id="btnHallBack" class="btn btn-secondary" style="font-size:0.4rem;">🏠 Menu</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     MOBILE TOUCH CONTROLS
+     ============================================================ -->
+<div id="mobileControls">
+  <button class="touch-btn" id="touchLeft">◀</button>
+  <button class="touch-btn" id="touchDown">▼</button>
+  <button class="touch-btn" id="touchRotate">↻</button>
+  <button class="touch-btn" id="touchRight">▶</button>
+  <button class="touch-btn touch-btn-wide" id="touchDrop">DROP</button>
+  <button class="touch-btn" id="touchHold">H</button>
+</div>
+
+<!-- Game Engine -->
+<script src="game.js"></script>
+</body>
+</html>

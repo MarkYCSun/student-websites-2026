@@ -1,0 +1,11 @@
+{
+  "name": "holiday-tetris-net",
+  "private": true,
+  "description": "WebSocket relay for dual-board Tetris (tetris.html)",
+  "scripts": {
+    "relay": "node tetris-server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

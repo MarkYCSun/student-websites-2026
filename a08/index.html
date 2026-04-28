@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="crypt">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TETRIS OF THE DAMNED</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Creepster&family=UnifrakturMaguntia&family=Butcherman&family=Nosifer&family=Cinzel:wght@400;700;900&family=Metamorphous&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- ==================== GRAVEYARD BACKGROUND ==================== -->
+    <div id="world" aria-hidden="true">
+      <div class="sky">
+        <div class="moon"></div>
+        <div class="clouds cloud-a"></div>
+        <div class="clouds cloud-b"></div>
+      </div>
+      <div class="stars"></div>
+      <div class="mountains"></div>
+      <div class="trees tree-far"></div>
+      <div class="trees tree-near"></div>
+      <div class="graves"></div>
+      <div class="fog fog-a"></div>
+      <div class="fog fog-b"></div>
+      <canvas id="bat-canvas"></canvas>
+      <div class="world-vignette"></div>
+      <div class="lightning"></div>
+      <div class="world-grain"></div>
+    </div>
+
+    <!-- ==================== APP ==================== -->
+    <div id="app">
+      <!-- Loading -->
+      <section id="loading-screen" class="screen active overlay">
+        <div class="loader">
+          <div class="loader-tomb"></div>
+          <h2>SUMMONING THE CRYPT<span class="dots"></span></h2>
+        </div>
+      </section>
+
+      <!-- ==================== MAIN MENU ==================== -->
+      <section id="main-menu" class="screen">
+        <div class="menu-mansion" aria-hidden="true">
+          <div class="mansion-window w1"></div>
+          <div class="mansion-window w2"></div>
+          <div class="mansion-window w3"></div>
+          <div class="mansion-silhouette"></div>
+        </div>
+        <div class="menu-layout">
+          <p class="menu-tag">✞ UNHALLOWED GROUND ✞</p>
+          <h1 id="game-title" class="damned-title" aria-label="Tetris of the Damned">
+            <span>T</span><span>E</span><span>T</span><span>R</span><span>I</span><span>S</span>
+            <span class="gap">·</span>
+            <span>O</span><span>F</span>
+            <span class="gap">·</span>
+            <span>T</span><span>H</span><span>E</span>
+            <span class="gap"> </span>
+            <span class="dline">D</span><span class="dline">A</span><span class="dline">M</span><span class="dline">N</span><span class="dline">E</span><span class="dline">D</span>
+          </h1>
+          <p class="menu-subtitle">The blocks remember. The graves do not sleep.</p>
+
+          <div class="menu-buttons">
+            <button id="btn-start" class="crypt-btn">
+              <i class="fa-solid fa-skull"></i>
+              <span>ENTER THE CRYPT</span>
+              <em>Solo · 1 Player</em>
+            </button>
+            <button id="btn-start-2p" class="crypt-btn">
+              <i class="fa-solid fa-ghost"></i>
+              <span>SUMMON A FRIEND</span>
+              <em>2 Player · Split Grave</em>
+            </button>
+            <button id="btn-leaderboard" class="crypt-btn">
+              <i class="fa-solid fa-book-skull"></i>
+              <span>BOOK OF THE DEAD</span>
+              <em>Leaderboard</em>
+            </button>
+            <button id="btn-settings" class="crypt-btn">
+              <i class="fa-solid fa-candle-holder"></i>
+              <span>DARK RITUALS</span>
+              <em>Settings</em>
+            </button>
+            <button id="btn-how" class="crypt-btn">
+              <i class="fa-solid fa-droplet"></i>
+              <span>HOW TO SURVIVE</span>
+              <em>Instructions</em>
+            </button>
+          </div>
+
+          <p class="menu-footer">
+            <span id="galactic-record">The Most Damned Soul: — · 0</span>
+            <small class="press-any">Press any key… if you dare</small>
+          </p>
+        </div>
+      </section>
+
+      <!-- ==================== GAME SCREEN (1P) ==================== -->
+      <section id="game-screen" class="screen">
+        <div class="layout-1p">
+          <!-- LEFT PANEL -->
+          <aside class="left-panel">
+            <div class="panel tombstone hold-panel">
+              <h3>CRYPT SLOT</h3>
+              <canvas id="hold-canvas" width="144" height="144"></canvas>
+            </div>
+            <div class="panel tombstone moon-panel">
+              <h3>MOON PHASE</h3>
+              <div id="moon-phase" class="moon-phase" aria-label="Level">
+                <div class="moon-shadow"></div>
+                <span class="moon-numeral">I</span>
+              </div>
+              <p id="level-label" class="tombstone-label">NIGHT I</p>
+            </div>
+            <div class="panel tombstone controls-panel">
+              <h3>RITES</h3>
+              <ul class="controls-list">
+                <li><kbd>←</kbd><kbd>→</kbd> drift</li>
+                <li><kbd>↓</kbd> descend</li>
+                <li><kbd>↑</kbd> rotate</li>
+                <li><kbd>Space</kbd> damn it</li>
+                <li><kbd>Z</kbd> rotate counter</li>
+                <li><kbd>C</kbd>/<kbd>Shift</kbd> entomb</li>
+                <li><kbd>P</kbd> stasis</li>
+              </ul>
+            </div>
+          </aside>
+
+          <!-- CENTER STACK -->
+          <section class="board-stack panel">
+            <div class="stone-frame">
+              <div class="chains-top"></div>
+              <div class="candle candle-left"><span class="flame"></span></div>
+              <div class="candle candle-right"><span class="flame"></span></div>
+              <div class="blood-drip drip-left"></div>
+              <div class="blood-drip drip-right"></div>
+            </div>
+            <canvas id="board-canvas" width="360" height="720"></canvas>
+            <canvas id="monster-canvas" width="360" height="720"></canvas>
+            <canvas id="particle-canvas" width="360" height="720"></canvas>
+            <canvas id="overlay-canvas" width="360" height="720"></canvas>
+            <div class="ooze"></div>
+            <div id="board-darken" class="board-darken"></div>
+            <div id="boss-banner" class="boss-banner" aria-live="polite"></div>
+            <div id="event-card" class="event-card" aria-live="polite">
+              <div class="event-card-kind"></div>
+              <div class="event-card-title"></div>
+              <div class="event-card-desc"></div>
+              <div class="event-card-tip"><span class="tip-arrow">↳</span> <span class="tip-text"></span></div>
+            </div>
+            <div id="status-effects" class="status-effects"></div>
+          </section>
+
+          <!-- RIGHT PANEL -->
+          <aside class="right-panel">
+            <div class="panel tombstone score-tomb" id="score-tomb">
+              <div class="tomb-cross">✞</div>
+              <h3>R.I.P YOUR SCORE</h3>
+              <div id="score-value" class="score-value">0</div>
+              <p class="epitaph-line">Carved in bone</p>
+            </div>
+            <div class="panel tombstone lines-panel">
+              <h3>SOULS CONSUMED</h3>
+              <div id="lines-value" class="lines-value">0</div>
+            </div>
+            <div class="panel tombstone combo-panel" id="combo-panel">
+              <h3>COMBO</h3>
+              <div id="combo-value" class="combo-value">—</div>
+            </div>
+            <div class="panel tombstone next-panel">
+              <h3>RISING NEXT</h3>
+              <canvas id="next-canvas" width="144" height="432"></canvas>
+            </div>
+          </aside>
+        </div>
+
+        <!-- TOP BAR -->
+        <div class="top-bar">
+          <button id="btn-pause" class="icon-btn" title="Pause"><i class="fa-solid fa-pause"></i></button>
+          <button id="btn-mute" class="icon-btn" title="Mute"><i class="fa-solid fa-volume-high"></i></button>
+          <button id="btn-home" class="icon-btn" title="Flee"><i class="fa-solid fa-door-open"></i></button>
+        </div>
+      </section>
+
+      <!-- ==================== PAUSE ==================== -->
+      <section id="pause-screen" class="screen overlay">
+        <div class="pause-panel panel tombstone">
+          <h2 class="drip-text">PAUSED IN LIMBO</h2>
+          <p>Your soul waits…</p>
+          <div class="btn-stack">
+            <button class="crypt-btn" id="btn-resume"><i class="fa-solid fa-play"></i><span>Return</span></button>
+            <button class="crypt-btn" id="btn-restart"><i class="fa-solid fa-skull-crossbones"></i><span>Begin Anew</span></button>
+            <button class="crypt-btn" id="btn-pause-settings"><i class="fa-solid fa-candle-holder"></i><span>Dark Rituals</span></button>
+            <button class="crypt-btn" id="btn-pause-menu"><i class="fa-solid fa-door-open"></i><span>Flee the Crypt</span></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== GAME OVER ==================== -->
+      <section id="gameover-screen" class="screen overlay">
+        <div class="gameover-wrap">
+          <h1 class="soul-claimed drip-text">YOUR SOUL IS MINE</h1>
+          <div class="tombstone-epitaph">
+            <div class="tomb-cross">✞</div>
+            <h3>HERE LIES</h3>
+            <input id="player-name" maxlength="14" placeholder="Unnamed Wretch" />
+            <p class="epitaph">
+              Who survived <b><span id="go-level">0</span></b> nights,<br />
+              Freed <b><span id="go-lines">0</span></b> souls,<br />
+              Vanquished <b><span id="go-monsters">0</span></b> horrors,<br />
+              And scored <b><span id="go-score">0</span></b>.<br />
+              <em>May they rest… or not.</em>
+            </p>
+          </div>
+          <div class="btn-stack">
+            <button class="crypt-btn" id="btn-save"><i class="fa-solid fa-feather-pointed"></i><span>Inscribe</span></button>
+            <button class="crypt-btn" id="btn-again"><i class="fa-solid fa-skull"></i><span>Rise From The Dead</span></button>
+            <button class="crypt-btn" id="btn-flee"><i class="fa-solid fa-door-open"></i><span>Flee The Crypt</span></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== BOOK OF THE DEAD ==================== -->
+      <section id="leaderboard-screen" class="screen overlay">
+        <div class="book-wrap">
+          <h2 class="drip-text">BOOK OF THE DEAD</h2>
+          <div class="book-of-dead">
+            <table id="leaderboard-table">
+              <thead>
+                <tr><th>#</th><th>Soul</th><th>Score</th><th>Night</th><th>Souls</th><th>Monsters</th></tr>
+              </thead>
+              <tbody id="leaderboard-body"></tbody>
+            </table>
+          </div>
+          <div class="btn-stack">
+            <button class="crypt-btn" id="btn-clear-records"><i class="fa-solid fa-fire"></i><span>Burn The Book</span></button>
+            <button class="crypt-btn" id="btn-back-lb"><i class="fa-solid fa-door-open"></i><span>Return</span></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SETTINGS ==================== -->
+      <section id="settings-screen" class="screen overlay">
+        <div class="panel tombstone settings-wrap">
+          <h2 class="drip-text">DARK RITUALS</h2>
+          <label>Master Volume <input type="range" id="set-master" min="0" max="1" step="0.05" /></label>
+          <label>Unholy Music <input type="range" id="set-music" min="0" max="1" step="0.05" /></label>
+          <label>Unspeakable SFX <input type="range" id="set-sfx" min="0" max="1" step="0.05" /></label>
+          <label class="toggle"><input type="checkbox" id="set-shake" /> Screen quake</label>
+          <label class="toggle"><input type="checkbox" id="set-particles" /> Particles</label>
+          <label class="toggle"><input type="checkbox" id="set-jumpscares" /> Jumpscares</label>
+          <label class="toggle"><input type="checkbox" id="set-ghost" /> Ghost piece</label>
+          <div class="btn-stack">
+            <button class="crypt-btn" id="btn-reset-settings"><i class="fa-solid fa-broom"></i><span>Reset</span></button>
+            <button class="crypt-btn" id="btn-back-settings"><i class="fa-solid fa-door-open"></i><span>Return</span></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== HOW TO SURVIVE ==================== -->
+      <section id="howtoplay-screen" class="screen overlay">
+        <div class="panel tombstone how-wrap">
+          <h2 class="drip-text">HOW TO SURVIVE</h2>
+          <div class="how-columns">
+            <div>
+              <h4>Controls</h4>
+              <ul>
+                <li><kbd>←</kbd>/<kbd>→</kbd> drift left / right</li>
+                <li><kbd>↓</kbd> soft drop (descend)</li>
+                <li><kbd>↑</kbd> rotate clockwise</li>
+                <li><kbd>Space</kbd> hard drop (damn it)</li>
+                <li><kbd>Z</kbd> rotate counter-clockwise</li>
+                <li><kbd>C</kbd> / <kbd>Shift</kbd> hold (entomb)</li>
+                <li><kbd>P</kbd> / <kbd>Esc</kbd> pause</li>
+              </ul>
+            </div>
+            <div>
+              <h4>The Horrors</h4>
+              <ul>
+                <li><b>Dracula</b> — 4 attacks. Clear 3 lines to defeat.</li>
+                <li><b>Werewolf</b> — slashes the board at level 7+.</li>
+                <li><b>Ghost</b> — inverts controls if touched.</li>
+                <li><b>Spider</b> — webs blocks, spreads over time.</li>
+                <li><b>Grim Reaper</b> — rises as your stack rises.</li>
+              </ul>
+            </div>
+            <div>
+              <h4>Tools of Survival</h4>
+              <ul>
+                <li><b>Garlic</b> — repels the next monster event.</li>
+                <li><b>Silver Cross</b> — clears cursed / webbed blocks.</li>
+                <li><b>Witch Brew</b> — random fate, good or ill.</li>
+                <li><b>Death Rattle</b> — clears 5 rows, costs 1000.</li>
+                <li><b>Cursed Candle</b> — rising flames clear rows.</li>
+                <li><b>Bat Familiar</b> — devours blocks for 30s.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="btn-stack">
+            <button class="crypt-btn" id="btn-back-how"><i class="fa-solid fa-door-open"></i><span>Return</span></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== HORROR OVERLAYS ==================== -->
+      <div id="reaper-overlay" class="reaper-overlay" aria-hidden="true">
+        <canvas id="reaper-canvas"></canvas>
+      </div>
+      <div id="jumpscare" class="jumpscare" aria-hidden="true">
+        <canvas id="jumpscare-canvas"></canvas>
+      </div>
+      <canvas id="shatter-canvas" class="shatter-canvas" aria-hidden="true"></canvas>
+      <div id="screen-tint" class="screen-tint" aria-hidden="true"></div>
+      <div id="level-up-banner" aria-hidden="true">
+        <span class="descent-label">DESCENT INTO NIGHT</span>
+        <span class="descent-numeral">I</span>
+      </div>
+      <div id="whisper-cloud" class="whisper-cloud" aria-hidden="true"></div>
+    </div>
+
+    <script src="game.js"></script>
+  </body>
+</html>

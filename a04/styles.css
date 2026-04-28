@@ -1,0 +1,557 @@
+/* ============================================================
+   DINO-TRIX: Jurassic Chaos Edition — Complete Stylesheet
+   ============================================================ */
+
+/* --- Google-style Font --- */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@400;700;900&display=swap');
+
+/* --- CSS Reset & Global --- */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #0a0a12;
+  font-family: 'Orbitron', 'Segoe UI', sans-serif;
+  color: #e0e0e0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* --- Background Jungle Canvas (behind everything) --- */
+#bgCanvas {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+}
+
+/* --- Screen Containers --- */
+.screen {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: opacity 0.5s ease;
+}
+.screen.active { display: flex; }
+
+/* --- START SCREEN --- */
+#startScreen {
+  background: radial-gradient(ellipse at center, rgba(20,10,5,0.85) 0%, rgba(5,5,15,0.95) 100%);
+}
+#startScreen .title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(1.4rem, 4vw, 3.2rem);
+  text-align: center;
+  color: #ff6a00;
+  text-shadow:
+    0 0 10px #ff6a00,
+    0 0 30px #ff4500,
+    0 0 60px #ff2200,
+    0 0 100px #cc0000;
+  animation: titlePulse 2s ease-in-out infinite alternate, titleFloat 4s ease-in-out infinite;
+  margin-bottom: 0.5em;
+  letter-spacing: 2px;
+}
+#startScreen .subtitle {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(0.55rem, 1.5vw, 0.9rem);
+  color: #66ffaa;
+  text-shadow: 0 0 8px #00ff88, 0 0 20px #009955;
+  animation: subtitleGlow 3s ease-in-out infinite alternate;
+  margin-bottom: 2em;
+  letter-spacing: 1px;
+}
+@keyframes titlePulse {
+  0% { transform: scale(1); filter: brightness(1); }
+  100% { transform: scale(1.04); filter: brightness(1.3); }
+}
+@keyframes titleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes subtitleGlow {
+  0% { opacity: 0.6; } 100% { opacity: 1; }
+}
+
+/* --- Buttons --- */
+.btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(0.55rem, 1.2vw, 0.85rem);
+  padding: 14px 32px;
+  margin: 8px;
+  border: 2px solid;
+  border-radius: 8px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.btn::before {
+  content: '';
+  position: absolute; top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  transition: left 0.5s ease;
+}
+.btn:hover::before { left: 100%; }
+
+.btn-primary {
+  background: linear-gradient(135deg, #ff4500, #ff6a00);
+  border-color: #ff8c00;
+  color: #fff;
+  box-shadow: 0 0 15px rgba(255,69,0,0.5), 0 4px 15px rgba(0,0,0,0.3);
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, #ff6a00, #ff8c00);
+  box-shadow: 0 0 25px rgba(255,69,0,0.8), 0 4px 20px rgba(0,0,0,0.4);
+  transform: translateY(-2px);
+}
+.btn-secondary {
+  background: linear-gradient(135deg, #1a3a4a, #0d2030);
+  border-color: #00ddff;
+  color: #00ddff;
+  box-shadow: 0 0 10px rgba(0,221,255,0.3);
+}
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #0d2030, #1a3a4a);
+  box-shadow: 0 0 20px rgba(0,221,255,0.6);
+  transform: translateY(-2px);
+}
+.btn-danger {
+  background: linear-gradient(135deg, #8b0000, #cc0000);
+  border-color: #ff3333;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(255,0,0,0.3);
+}
+.btn-success {
+  background: linear-gradient(135deg, #006622, #00aa33);
+  border-color: #00ff55;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(0,255,85,0.3);
+}
+.btn-success:hover {
+  box-shadow: 0 0 20px rgba(0,255,85,0.6);
+  transform: translateY(-2px);
+}
+
+/* --- Menu Layout --- */
+.menu-buttons {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 8px;
+  margin-top: 1em;
+}
+
+/* --- Game Screen --- */
+#gameScreen {
+  background: transparent;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 10px;
+}
+
+/* --- Game Panel (wraps canvas + info) --- */
+.game-panel {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 12px;
+  position: relative;
+}
+.game-panel .board-wrapper {
+  position: relative;
+  border: 3px solid;
+  border-image: linear-gradient(180deg, #ff6a00, #ff2200, #aa0000) 1;
+  box-shadow:
+    0 0 15px rgba(255,69,0,0.4),
+    inset 0 0 30px rgba(0,0,0,0.6);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.game-panel .board-wrapper canvas {
+  display: block;
+}
+.game-panel .side-info {
+  display: flex; flex-direction: column;
+  gap: 10px;
+  min-width: 110px;
+}
+.info-box {
+  background: rgba(10,10,20,0.85);
+  border: 1px solid rgba(255,106,0,0.4);
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+  box-shadow: 0 0 8px rgba(255,69,0,0.15);
+}
+.info-box .label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.45rem;
+  color: #ff8c00;
+  text-shadow: 0 0 4px #ff4500;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.info-box .value {
+  font-family: 'Orbitron', monospace;
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.3);
+}
+.next-piece-canvas {
+  width: 100px; height: 80px;
+  display: block;
+  margin: 0 auto;
+}
+.held-piece-canvas {
+  width: 100px; height: 80px;
+  display: block;
+  margin: 0 auto;
+}
+
+/* --- T-Rex Container --- */
+#trexContainer {
+  position: relative;
+  width: 160px; height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+#trexCanvas {
+  width: 160px;
+  height: 400px;
+}
+
+/* --- Combo Pop-up --- */
+.combo-popup {
+  position: fixed;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 2rem;
+  color: #ffdd00;
+  text-shadow: 0 0 15px #ff6600, 0 0 30px #ff3300, 2px 2px 0 #000;
+  pointer-events: none;
+  z-index: 100;
+  animation: comboFly 1.2s ease-out forwards;
+}
+@keyframes comboFly {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  50% { opacity: 1; transform: translateY(-40px) scale(1.4); }
+  100% { opacity: 0; transform: translateY(-100px) scale(0.8); }
+}
+
+/* --- Screen Shake --- */
+@keyframes screenShake {
+  0%,100% { transform: translate(0,0); }
+  10% { transform: translate(-6px, 4px); }
+  20% { transform: translate(5px, -6px); }
+  30% { transform: translate(-4px, 2px); }
+  40% { transform: translate(6px, -3px); }
+  50% { transform: translate(-3px, 5px); }
+  60% { transform: translate(4px, -4px); }
+  70% { transform: translate(-2px, 3px); }
+  80% { transform: translate(3px, -2px); }
+  90% { transform: translate(-1px, 1px); }
+}
+.shake {
+  animation: screenShake 0.5s ease-out;
+}
+
+/* --- Game Over Screen --- */
+#gameOverScreen {
+  background: radial-gradient(ellipse at center, rgba(40,0,0,0.9) 0%, rgba(5,0,0,0.97) 100%);
+}
+#gameOverScreen .go-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(1.2rem, 3vw, 2.5rem);
+  color: #ff2200;
+  text-shadow: 0 0 20px #ff0000, 0 0 40px #cc0000;
+  animation: titlePulse 1.5s ease-in-out infinite alternate;
+  margin-bottom: 0.5em;
+}
+.go-score {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(1rem, 2.5vw, 2rem);
+  font-weight: 900;
+  color: #ffaa00;
+  text-shadow: 0 0 10px #ff6600;
+  margin-bottom: 0.3em;
+}
+.go-level {
+  font-size: 0.8rem;
+  color: #aaa;
+  margin-bottom: 1.5em;
+}
+
+/* --- Hall of Fossils (High Scores) --- */
+#hallScreen {
+  background: radial-gradient(ellipse at center, rgba(10,20,10,0.9) 0%, rgba(0,5,0,0.97) 100%);
+}
+#hallScreen .hall-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(0.9rem, 2.5vw, 1.8rem);
+  color: #66ffaa;
+  text-shadow: 0 0 15px #00ff66, 0 0 30px #009933;
+  margin-bottom: 0.8em;
+}
+.name-input-area {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 10px;
+  margin-bottom: 1.5em;
+}
+.name-input-area input {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.7rem;
+  padding: 10px 16px;
+  background: rgba(0,40,20,0.6);
+  border: 2px solid #00ff88;
+  border-radius: 6px;
+  color: #00ff88;
+  text-align: center;
+  outline: none;
+  width: 260px;
+  box-shadow: 0 0 10px rgba(0,255,136,0.2);
+}
+.name-input-area input:focus {
+  box-shadow: 0 0 20px rgba(0,255,136,0.5);
+}
+.score-table {
+  width: 90%; max-width: 500px;
+  border-collapse: collapse;
+  margin-bottom: 1em;
+}
+.score-table th {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.45rem;
+  color: #ff8c00;
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(255,140,0,0.4);
+}
+.score-table td {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.7rem;
+  padding: 5px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  color: #ccc;
+}
+.score-table tr:nth-child(1) td { color: #ffd700; }
+.score-table tr:nth-child(2) td { color: #c0c0c0; }
+.score-table tr:nth-child(3) td { color: #cd7f32; }
+.dino-avatar {
+  display: inline-block;
+  width: 16px; height: 16px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* --- Pause Overlay --- */
+#pauseOverlay {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.8);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  backdrop-filter: blur(4px);
+}
+#pauseOverlay.active { display: flex; }
+#pauseOverlay .pause-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 1.5rem;
+  color: #ffdd00;
+  text-shadow: 0 0 15px #ff8800;
+  margin-bottom: 1em;
+}
+.dino-fact {
+  max-width: 400px;
+  text-align: center;
+  font-size: 0.7rem;
+  color: #88ccaa;
+  line-height: 1.6;
+  margin-bottom: 1.5em;
+  padding: 15px;
+  background: rgba(0,40,20,0.4);
+  border: 1px solid rgba(0,255,100,0.2);
+  border-radius: 8px;
+}
+.dino-fact .fact-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.4rem;
+  color: #66ff88;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* --- Settings / Volume --- */
+.settings-panel {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 12px;
+  margin: 1em 0;
+}
+.slider-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.slider-row label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.4rem;
+  color: #ff8c00;
+  min-width: 60px;
+  text-align: right;
+}
+.slider-row input[type="range"] {
+  -webkit-appearance: none;
+  width: 140px; height: 6px;
+  background: linear-gradient(90deg, #ff4500, #ffaa00);
+  border-radius: 3px;
+  outline: none;
+}
+.slider-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(255,140,0,0.6);
+}
+
+/* --- Mobile Controls --- */
+#mobileControls {
+  display: none;
+  position: fixed;
+  bottom: 10px;
+  left: 0; right: 0;
+  z-index: 40;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+}
+.touch-btn {
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  background: rgba(255,106,0,0.3);
+  border: 2px solid rgba(255,106,0,0.6);
+  color: #ffaa00;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.touch-btn:active {
+  background: rgba(255,106,0,0.6);
+  transform: scale(0.92);
+}
+.touch-btn-wide {
+  width: 72px;
+  border-radius: 27px;
+  font-size: 0.6rem;
+  font-family: 'Press Start 2P', monospace;
+}
+
+/* Show mobile controls on touch devices */
+@media (max-width: 768px), (pointer: coarse) {
+  #mobileControls { display: flex; }
+  .game-panel .side-info { min-width: 80px; }
+  .info-box .label { font-size: 0.35rem; }
+  .info-box .value { font-size: 0.8rem; }
+  #trexContainer { width: 80px; }
+  #trexCanvas { width: 80px; height: 200px; }
+}
+
+/* --- Multiplayer label --- */
+.player-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.55rem;
+  text-align: center;
+  padding: 4px;
+  margin-bottom: 4px;
+  border-radius: 4px;
+}
+.player-label.p1 {
+  color: #00ddff;
+  text-shadow: 0 0 8px #00aaff;
+}
+.player-label.p2 {
+  color: #ff66aa;
+  text-shadow: 0 0 8px #ff3388;
+}
+
+/* --- VS Divider --- */
+.vs-divider {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 1.2rem;
+  color: #ffdd00;
+  text-shadow: 0 0 15px #ff8800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  animation: titlePulse 2s ease-in-out infinite alternate;
+}
+
+/* --- Power-up indicator --- */
+.powerup-indicator {
+  position: absolute;
+  top: 10px; left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.5rem;
+  padding: 4px 12px;
+  border-radius: 12px;
+  z-index: 30;
+  animation: powerGlow 1s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes powerGlow {
+  0% { opacity: 0.7; box-shadow: 0 0 10px currentColor; }
+  100% { opacity: 1; box-shadow: 0 0 25px currentColor; }
+}
+
+/* --- Saved game indicator on start screen --- */
+.saved-game-info {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.4rem;
+  color: #88ccaa;
+  margin-top: 4px;
+  text-shadow: 0 0 6px rgba(0,255,100,0.3);
+}
+
+/* --- Scrollbar --- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+::-webkit-scrollbar-thumb { background: #ff6a00; border-radius: 3px; }
+
+/* --- Utility Animation --- */
+.fadeIn { animation: fadeIn 0.5s ease forwards; }
+@keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
+
+/* --- In-game MENU button (floating top-right) --- */
+.btn-ingame-menu {
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  z-index: 45;
+  font-size: 0.45rem !important;
+  padding: 8px 16px !important;
+  opacity: 0.75;
+  transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-ingame-menu:hover {
+  opacity: 1;
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(0,221,255,0.6);
+}
+
